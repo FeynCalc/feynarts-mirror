@@ -1,0 +1,134 @@
+
+(* :Title: QED.gen *) 
+
+(* :Authors: A.Denner, H.Eck, O.Hahn, S.Kueblbeck *) 
+
+(* :Summary: Generic model for FeynArts` 
+ 	     Test model for an alternative form of QED
+*)
+
+(* :Context: HighEnergyPhysics`FeynArts` *)
+
+(* :Package Version 0.1 *)
+   
+(* :Description:
+	This model file defines the general analytical propagators and
+	couplings. 
+	We define only one generic coupling (FFV) for the QED.
+	Defined spinors are USpinor, VSpinor, UbarSpinor, VbarSpinor
+*)
+
+(* This line indicates the type of generic model that is loaded (should
+   be the basename of this file and has to match the identifier of
+   GenericPropagators and GenericCouplings):
+*)
+$GenericModel = "QED";
+
+(* Kinematic indices are `transported' along a propagator line.
+   KinematicIndices[X] = {Name} means, that the generic field X will carry
+   an index Index[Name, i] along the line:  
+   X[ n, {m..}, p, {Index[Name, i]} -> {Index[Name, i+1]} ]
+*)
+KinematicIndices[F] = {};
+KinematicIndices[V] = {Lorentz};
+KinematicIndices[S] = {};
+KinematicIndices[U] = {};
+
+Appearance[ Index[Lorentz, i_Integer ] ] := Greek[i+10];
+
+SetAttributes[{MetricTensor},Orderless];
+
+M$GenericPropagators =
+{
+(* incoming fermion/anti-fermion: 
+*)
+AnalyticalPropagator[Incoming][ s F[ind, mom] ] == 
+ If[ s===-1,
+     (* anti-fermion (e.g. positron) *)
+     NonCommutative[ VbarSpinor[ - mom ] ],
+     (* fermion (e.g. electron) *)
+     NonCommutative[ USpinor[ - mom ] ]
+   ],
+
+(* outgoing fermion/anti-fermion: 
+*)
+AnalyticalPropagator[Outgoing][ s F[ind, mom] ] == 
+ If[ s===-1,
+     (* anti-fermion (e.g. positron) *)
+     NonCommutative[ VSpinor[ - mom ] ],
+     (* fermion (e.g. electron) *)
+     NonCommutative[ UbarSpinor[ - mom ] ]
+   ],
+
+(* internal fermion lines:
+*)
+AnalyticalPropagator[Internal][ sig F[ind,mom] ] == 
+          NonCommutative[ DiracSlash[ -mom ] + Mass[F[ind]] ]  
+	       I PropagatorDenominator[ mom , Mass[F[ind]] ], 
+
+(* incoming photon:
+*)
+AnalyticalPropagator[Incoming][ sig V[ind, mom, {li1}] ] == 
+	  Epsilon[li1][ mom ], 
+
+(* outgoing photon:
+*)
+AnalyticalPropagator[Outgoing][ sig V[ind, mom, {li1}] ] == 
+	  Conjugate[Epsilon][li1][ -mom ], 
+
+(* virtual photon:
+*)
+AnalyticalPropagator[Internal][ sig V[ind,mom,{li1}->{li2}] ] == 
+	  I PropagatorDenominator[ mom , Mass[V[ind]] ]
+	       ( - MetricTensor[li1, li2] )
+
+};
+
+M$GenericCouplings  =
+{
+
+(* F-F-V :
+*)
+AnalyticalCoupling[ s1 F[i,mom1], s2 F[j,mom2], 
+		    s3 V[k,mom3,{li3}] ] ==
+   G[-1][ s1 F[i], s2 F[j], s3 V[k] ] . 
+		  { NonCommutative[DiracMatrix[li3], ChiralityProjector[-1]], 
+                    NonCommutative[DiracMatrix[li3], ChiralityProjector[+1]] }
+
+};
+
+(* FermionFlipRules: for a certain mapping of Fermion fields in a coupling
+   we have to know which operations to perform.
+*)
+M$FermionFlipRule[ 1->2, 2->1, __ ] =
+{
+  NonCommutative[ DiracMatrix[li_],ChiralityProjector[ 1]]
+  :> - NonCommutative[ DiracMatrix[li], ChiralityProjector[-1] ],
+  NonCommutative[ DiracMatrix[li_],ChiralityProjector[-1]]
+  :> - NonCommutative[ DiracMatrix[li], ChiralityProjector[ 1] ]
+};
+
+(* TruncationRules: rule for omitting the wave functions of external
+   Propagators defined in this file.
+*)
+M$TruncationRules = 
+  {
+   Epsilon[_][__] 		-> 1 ,
+   Conjugate[Epsilon][_][__] 	-> 1 ,
+   USpinor[__] 			-> 1 ,
+   VSpinor[__] 			-> 1 ,
+   UbarSpinor[__] 		-> 1 ,
+   VbarSpinor[__] 		-> 1 
+  };
+
+(* LastGenericRules: the very last rules that are applied to an amplitude
+   before it is returned by CreateFeynAmp.
+*)
+M$LastGenericRules = 
+  {
+   (* relicts of the truncation of spinors: *)
+   Dot[ 1, line__, 1 ] :> Dot[ line ],
+   Dot[ 1, 1 ] :> 1
+  };
+
+(**)

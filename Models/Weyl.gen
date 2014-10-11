@@ -1,0 +1,252 @@
+
+(* :Title: Weyl.gen *) 
+
+(* :Authors: S.Dittmaier, H.Eck, Th.Grund, S.Kueblbeck *) 
+
+(* :Summary: Generic model for FeynArts` with Weyl indices *)
+
+(* :Context: HighEnergyPhysics`FeynArts` *)
+
+(* :Package Version 1.1 *)
+
+(* :Last Change: 29.02.96 *)
+   
+(* :Description:
+	This model file defines the general analytical propagators and
+	couplings. 
+        The model is the standard model using the Weyl-Van der Waerden
+	formalism.
+*)
+
+(* This line indicates the type of generic model that is loaded (should
+   be the basename of this file):
+*)
+$GenericModel = "Weyl";
+
+(* All symbols that appear in the first time in this file are put to the
+    context "HighEnergyPhysics`WeylSymbols`".
+*)
+BeginPackage["HighEnergyPhysics`WeylSymbols`"]
+
+Weyl::usage = " "
+DiracSpinor::usage = " "
+FourMatrix::usage = " "
+WeylDelta::usage = " "
+Dotted::usage = "Dotted[ind] denotes a dotted Weyl index."
+UpMetric::usage =
+"UpMetric[ind1, ind2] is the metric tensor with upper indices."
+LI::usage = "LI is the head of a lower index."
+UI::usage =
+"UI is the head of an upper index (only used in WeylMatrix and
+PolarizationMatrix)."
+WeylMatrix::usage = " "
+PolarizationMatrix::usage = " "
+LowMetric::usage =
+"LowMetric[ind1, ind2] is the metric tensor with lower indices."
+
+EndPackage[]
+
+
+Appearance[ Index[Weyl, i_Integer ] ] = Greek[ i ];
+
+(* Kinematic indices are `transported' along a propagator line.
+   KinematicIndices[X] = {Name} means, that the generic field X will carry
+   an index Index[Name, i] along the line:  
+   X[ n, {m..}, p, {Index[Name, i]} -> {Index[Name, i+1]} ]
+*)
+KinematicIndices[F] = {Weyl};
+KinematicIndices[V] = {Weyl,Weyl};
+KinematicIndices[S] = {};
+KinematicIndices[U] = {};
+
+(* Definition for Global` and HighEnergyPhysics`WeylCalc` symbols:
+ *)
+
+WeylMatrix /: Times[ -1, WeylMatrix[ mom_, wi1_, wi2_ ] ] :=
+        WeylMatrix[ Expand[ -mom ], wi1, wi2 ];
+
+UpMetric[ a_, b_ ]  :=  - UpMetric[ b, a ] /; Not[ OrderedQ[{a, b}] ] ;
+
+
+M$GenericPropagators =
+{
+
+(* general fermion propagator:
+*)
+AnalyticalPropagator[External][ s F[i, mom, {wi}] ] == 
+	  NonCommutative[ DiracSpinor[ -mom, Mass[ F[i] ], wi ] ] ,
+
+AnalyticalPropagator[Internal][ s F[i, mom, {wi1}->{wi2}] ] == 
+      NonCommutative[ 
+	    { 
+              { Mass[F[i]] WeylDelta[wi1,wi2],
+	        WeylMatrix[- mom,LI[wi1],LI[Dotted[wi2]]]        },
+	      { WeylMatrix[- mom,UI[Dotted[wi1]],UI[wi2]],
+		Mass[F[i]] WeylDelta[Dotted[wi2],Dotted[wi1]]  }
+            } 
+      ] I PropagatorDenominator[ mom , Mass[F[i]] ] ,
+
+(* general vector boson propagator:
+*)
+AnalyticalPropagator[External][ s V[i, mom, {wi1,wi2}] ] == 
+      PolarizationMatrix[ mom, Mass[V[i]], LI[Dotted[wi1]], LI[wi2]] ,
+
+AnalyticalPropagator[Internal][ s V[i,mom,{wi1,wi2}->{wi3,wi4}] ] == 
+	  2 I PropagatorDenominator[ mom , Mass[V[i]] ] 
+	      LowMetric[Dotted[wi1],Dotted[wi3]]
+		      LowMetric[wi2,wi4] ,
+
+(* general scalar particle propagator:
+*)
+AnalyticalPropagator[External][ s S[i,mom] ] ==  1 ,
+
+AnalyticalPropagator[Internal][ s S[i,mom] ] == 
+	  I PropagatorDenominator[ mom , Mass[S[i]] ] ,
+
+(* general Fadeev-Popov-ghost propagator: 
+*)
+AnalyticalPropagator[Internal][ s U[i,mom] ] == 
+	  I PropagatorDenominator[ mom , Mass[U[i]] ] 
+}
+
+M$GenericCouplings =
+{
+
+(* 1 FFS-coupling:                                                     (* OK *)
+ *)
+AnalyticalCoupling[ s1 F[i,mom1,{wi1}], 
+		    s2 F[j,mom2,{wi2}], 
+		    s3 S[k,mom3] ] ==
+      G[1][s1 F[i], s2 F[j], s3 S[k] ] .
+            { NonCommutative[ 
+                 {{0,0}, {0, WeylDelta[ Dotted[wi2], Dotted[wi1] ]}} ],
+              NonCommutative[ 
+                 {{WeylDelta[ wi1, wi2 ], 0}, {0,0}} ] } ,
+
+(* 2 FFV-coupling:                                                     (* OK *)
+ *)
+AnalyticalCoupling[ s1 F[i,mom1,{wi1}], s2 F[j,mom2,{wi2}], 
+		    s3 V[k,mom3,{wi3,wi4}] ] ==
+      G[1][ s1 F[i], s2 F[j], s3 V[k] ] .
+            { NonCommutative[
+                 {{0, WeylDelta[Dotted[wi2],Dotted[wi3]]
+                      WeylDelta[wi1,wi4] }, {0,0}} ],
+              NonCommutative[
+                 {{0,0}, {UpMetric[Dotted[wi3],Dotted[wi1]] 
+                          UpMetric[wi4,wi2], 0} } ] } ,
+
+
+(* 3 SUU-coupling:                                                      CHECK!!
+ *)
+AnalyticalCoupling[ s1 S[i,mom1], s2 U[j,mom2], s3 U[k,mom3] ] == 
+    G[1][ s1 S[i], s2 U[j], s3 U[k] ] . {1},
+
+(* 4 UUV-coupling:                                                      CHECK!!
+ *)
+AnalyticalCoupling[ s1 U[i,mom1], s2 U[j,mom2], s3 V[k,mom3,{wi3,wi4}] ]  == 
+    G[1][ s1 U[i], s2 U[j], s3 V[k] ] . 
+	   { WeylMatrix[ mom1, UI[ Dotted[wi3] ], UI[ wi4 ] ],
+	     WeylMatrix[ mom2, UI[ Dotted[wi3] ], UI[ wi4 ] ] } ,
+
+(* 5 SSS-coupling:                                                      CHECK!!
+ *)
+AnalyticalCoupling[ s1 S[i,mom1], s2 S[j,mom2], s3 S[k,mom3] ] ==
+    G[1][ s1 S[i], s2 S[j], s3 S[k] ] . {1} ,
+
+(* 6 SSV-coupling:                                                     (* OK *) 
+ *)
+AnalyticalCoupling[ s1 S[i,mom1], s2 S[j,mom2], s3 V[k,mom3,{wi3,wi4}] ]  == 
+    G[-1][ s1 S[i], s2 S[j], s3 V[k] ] . 
+       { 1/2 WeylMatrix[ mom1 - mom2 , UI[Dotted[wi3]], UI[wi4] ] },
+
+(* 7 SVV-coupling:                                                     (* OK *)
+ *)
+AnalyticalCoupling[ s1 S[i,mom1], s2 V[j,mom2,{wi1,wi2}], 
+		    s3 V[k,mom3,{wi3,wi4}] ]  == 
+    G[1][ s1 S[i], s2 V[j], s3 V[k] ] .
+       { 1/2 UpMetric[ Dotted[wi1],Dotted[wi3] ] UpMetric[wi2,wi4] } ,
+
+(* 8 VVV-coupling:                                                     (* OK *)
+ *)
+AnalyticalCoupling[ s1 V[i,mom1,{wi1,wi2}], 
+		            s2 V[j,mom2,{wi3,wi4}], 
+		            s3 V[k,mom3,{wi5,wi6}] ]  ==
+    G[-1][ s1 V[i], s2 V[j], s3 V[k] ] . 
+      { 1/4 ( UpMetric[Dotted[wi1],Dotted[wi3]] UpMetric[wi2,wi4] *
+		  WeylMatrix[mom1-mom2, UI[Dotted[wi5]], UI[wi6]] +
+	      UpMetric[Dotted[wi3],Dotted[wi5]] UpMetric[wi4,wi6] *
+		  WeylMatrix[mom2-mom3, UI[Dotted[wi1]], UI[wi2]] +
+	      UpMetric[Dotted[wi5],Dotted[wi1]] UpMetric[wi6,wi2] *
+		  WeylMatrix[mom3-mom1, UI[Dotted[wi3]], UI[wi4]] ) },
+
+(* 9 SSSS-coupling:                                                     CHECK!!
+ *)
+AnalyticalCoupling[ s1 S[i,mom1], s2 S[j,mom2], 
+		    s3 S[k,mom3], s4 S[l,mom4] ]  == 
+    G[1][ s1 S[i], s2 S[j], s3 S[k], s4 S[l] ] . {1} ,
+
+(* 10 SSVV-coupling:                                                    CHECK!!
+ *)
+AnalyticalCoupling[ s1 S[i,mom1], s2 S[j,mom2], 
+		    s3 V[k,mom3,{wi1,wi2}], s4 V[l,mom4,{wi3,wi4}] ]  == 
+    G[1][ s1 S[i], s2 S[j], s3 V[k], s4 V[l] ] .
+     { 1/2 UpMetric[ Dotted[wi1], Dotted[wi3] ] UpMetric[ wi2, wi4 ] },
+
+(* 11 VVVV-coupling:                                                    CHECK!! 
+ *)
+AnalyticalCoupling[ s1 V[i,mom1,{wi1,wi2}], s2 V[j,mom2,{wi3,wi4}], 
+		    s3 V[k,mom3,{wi5,wi6}], s4 V[l,mom4,{wi7,wi8}] ]  == 
+     G[1][ s1 V[i], s2 V[j], s3 V[k], s4 V[l] ] .
+	    { 1/4 UpMetric[ Dotted[wi1],Dotted[wi3] ] UpMetric[ wi2,wi4 ]
+	          UpMetric[ Dotted[wi5],Dotted[wi7] ] UpMetric[ wi6,wi8 ],
+	      1/4 UpMetric[ Dotted[wi1],Dotted[wi5] ] UpMetric[ wi2,wi6 ]
+	          UpMetric[ Dotted[wi3],Dotted[wi7] ] UpMetric[ wi4,wi8 ],
+	      1/4 UpMetric[ Dotted[wi1],Dotted[wi7] ] UpMetric[ wi2,wi8 ]
+	          UpMetric[ Dotted[wi3],Dotted[wi5] ] UpMetric[ wi4,wi6 ] } 
+}
+
+
+M$FermionFlipRule[ 1->2, 2->1, __ ] :=
+     { 
+       NonCommutative[ {{0, WeylDelta[Dotted[wi2_],Dotted[wi3_]]
+                       WeylDelta[wi1_,wi4_] }, {0,0}} ] :>
+       NonCommutative[ {{0, WeylDelta[Dotted[wi1],Dotted[wi3]]
+                       WeylDelta[wi2,wi4] }, {0,0}} ] 
+       ,
+       NonCommutative[ {{0,0}, {UpMetric[Dotted[wi3_],Dotted[wi1_]] 
+                          UpMetric[wi4_,wi2_], 0} } ] :>
+       NonCommutative[ {{0,0}, {UpMetric[Dotted[wi3],Dotted[wi2]] 
+                          UpMetric[wi4,wi1], 0} } ]
+     };
+
+
+(* TruncationRules: rule for omitting the wave functions of external
+ * Propagators defined in this file.
+ *)
+M$TruncationRules =
+ {
+   PolarizationMatrix[__]       -> 1 ,
+   DiracSpinor[__]              -> 1 ,
+   MajoranaSpinor[__]           -> 1
+ };
+
+(* LastGenericRules: the very last rules that are applied to an amplitude
+ * before it is returned by CreateFeynAmp.
+ *)
+M$LastGenericRules = 
+  {
+   (* relicts of the truncation of spinors: *)
+   FermionChain[ 1, line__, 1 ] :> FermionChain[ line ],
+   FermionChain[ 1, 1 ] :> 1,
+   FermionChain[ one_ ] :> one
+   (* Outgoing vector bosons: *)
+(*
+   PolarizationMatrix[ -k:FourMomentum[Incoming, _], r__ ] :>
+     PolarizationMatrix[ k, r ],
+   PolarizationMatrix[  s_. k:FourMomentum[Outgoing, _], r__] :>
+     PolarizationMatrix[ -k, r ]
+*)
+  };
+
+(**)
+
