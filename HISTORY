@@ -1,0 +1,37 @@
+Version 1.0 written 1991 by Hagen Eck and Sepp Kueblbeck
+========================================================
+fast and reliable diagram generator for renormalizable
+field theories (i.e. with 3- and 4-vertices only), but
+suffered from several restrictions:
+-- no counter term generation possible
+-- no fermion number violating theories possible
+-- only Lorentz formalism available
+
+Further modifications and enhancements:
+-- Nov 97: added X11 (`point-and-click') topology editor
+
+
+Version 2.0 written in 1995 by Hagen Eck
+========================================
+introduces a completely new three-level concept of generation.
+Fills the above mentioned gaps in FA 1.
+Some extra points are:
+-- the Graphics routines now live in a separate context so as
+   to be reusable by other packages
+
+
+current Version 2.2:
+====================
+-- completely overhauled: no new concepts, but most of the code was
+   rewritten entirely.
+-- known FA 2.1 bugs removed.
+-- much faster: e.g. model initialization is faster roughly by a
+   factor 3.
+-- includes a point-and-click topology editor together with a
+   sophisticated autoshaping algorithm.
+
+For a list of changes between 2.1 and 2.2 see the manual.
+
+Please send bugs reports etc. to
+Thomas Hahn <hahn@feynarts.de>
+

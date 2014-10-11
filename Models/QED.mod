@@ -1,95 +1,127 @@
+(*
+	QED.mod
+		Classes model file for leptons-only QED
+		by Hagen Eck and Sepp Kueblbeck
+		last modified 2 Jun 99 by Thomas Hahn
 
-(* :Title: QED.mod *)
 
-(* :Authors: Hagen Eck, Sepp Kueblbeck *)
+This file introduces the following symbols:
 
-(* :Summary: Model file for HighEnergyPhysics`FeynArts. 
-	     model:
-	     => Quantum Electrodynamics with leptons only <=
-	     -----------------------------------------------
+	coupling constants and masses:
+	------------------------------
+	EL:		electron charge (Thomson limit)
+
+	MLE:		lepton class mass
+	ME, MM, ML:	lepton masses (e, mu, tau)
+
+	GaugeXi[A]:	photon gauge parameter
+
+
+	one-loop renormalization constants (RCs):
+	-----------------------------------------
+	dZe1:		electromagnetic charge RC
+
+	dZAA1:		photon field RC
+
+	dMf1:		fermion mass RCs
+	dZfL1, dZfR1:	fermion field RCs
 *)
 
-(* :Context: HighEnergyPhysics`FeynArts` *)
 
-(* :Package Version 0.1 *)
+IndexRange[ Index[Generation] ] = {1, 2, 3}
 
-(* :Mathematica Version 2.0 *)
-
-(* :Requirements: FeynArts 2.0 *)
-
-(* This line indicates the type of classes model that is loaded (should
-   be the basename of this file and has to match the identifier of
-   ClassesDescription and CouplingMatrices):
-*)
+Appearance[ Index[Generation, i_Integer] ] := Alph[i + 8]
 
 
-(* Class descriptions:
-*)
+ViolatesQ[ q__ ] := Plus[q] =!= 0
 
-IndexRange[ Index[ Generation ] ] = { 1, 2, 3 };
-Appearance[ Index[ Generation, i_Integer ] ] := Alph[ i+8 ];
 
-M$ClassesDescription =
-{
-  (* Leptons (e, mu, tau) *)
- F[1]  == { SelfConjugate -> False, 
-              Indices -> { Index[Generation] },
-	      Mass -> MLE,
-	      PropagatorLabel -> ComposedChar[ {"e", Index[Generation]} ], 
-	      PropagatorType -> Straight, 
-	      PropagatorArrow -> Forward }, 
+M$ClassesDescription = {
 
-  (* Gaugebosons: Q = 0 *)
- V[1]  == { SelfConjugate -> True, 
-	      Mass -> 0, 
-	      PropagatorLabel -> SymbolChar["gamma"], 
-	      PropagatorType -> Sine, 
-	      PropagatorArrow -> None }
+	(* Leptons (e, mu, tau)
+	   note that in SM.mod the leptons live in class 2 (F[2]) *)
+  F[1] == {
+	SelfConjugate -> False,
+	Indices -> {Index[Generation]},
+	Mass -> MLE,
+	QuantumNumbers -> -Charge,
+	PropagatorLabel -> ComposedChar["e", Index[Generation]],
+	PropagatorType -> Straight,
+	PropagatorArrow -> Forward },
+
+	(* Photon *)
+  V[1] == {
+	SelfConjugate -> True,
+	Mass -> 0,
+	PropagatorLabel -> "\\gamma",
+	PropagatorType -> Sine,
+	PropagatorArrow -> None }
 }
 
-(* Definition of masses and labels for explicit particles: 
-*)
-TheMass[ F[1,{1}] ] = ME;	TheLabel[ F[1,{1}] ] = "e";
-TheMass[ F[1,{2}] ] = MM;	TheLabel[ F[1,{2}] ] = SymbolChar["mu"];
-TheMass[ F[1,{3}] ] = ML;	TheLabel[ F[1,{3}] ] = SymbolChar["tau"];
+TheMass[ F[1, {1}] ] = ME;
+TheMass[ F[1, {2}] ] = MM;
+TheMass[ F[1, {3}] ] = ML
 
-(* Definition of the QED-coupling(s):
- *)
+TheLabel[ F[1, {1}] ] = "e";
+TheLabel[ F[1, {2}] ] = "\\mu";
+TheLabel[ F[1, {3}] ] = "\\tau"
 
-M$CouplingMatrices =
-{
-(* F-F : G(+) * { slash[ p1 ] * omega[-],
-                  slash[ p2 ] * omega[+],
-                  omega[-],
-                  omega[+]               }
-*)
-(*
-  C[ F[1,{j1}], -F[1,{j2}] ]
-       == IndexDelta[j1,j2] * { { 0, CL }, { 0, CR },
-	                        { 0, CSM }, { 0, CSP } },
-*)
-(* V-V : G(+) * { g[mu,nu] p1 p2,
-                  p1_mu p2_nu,
-                  g[mu,nu]        }
-*)
-(*
-  C[ V[1], V[1] ]
-       == { { 0, -I CAA }, 
-	    { 0,  0 } ,
-            { 0,  0 }        },
-*)
+GaugeXi[ V[1] ] = GaugeXi[A]
 
- (* F-F-V : G(+) * { gamma[mu] omega[-],
-                     gamma[mu] omega[+]  }
-*)
-  C[ F[1,{j1}], -F[1,{j2}], V[1] ]
-       == IndexDelta[j1,j2] * { { I*EL, I*EL*CL }, 
-	                        { I*EL, I*EL*CR } }
-};
 
-(* LastModelRules: applied at the and of the amplitude generation.
-*)
-M$LastModelRules =
- {
- };
-(**)
+	(* the nomenclature has been kept compatible with SM.mod even
+	   though some indices are unnecessary since everything is
+	   flavour-diagonal here *)
+
+mdZfLR1[ type_, j1_ ] :=
+  Mass[F[type, j1]]/2 *
+    (dZfL1[type, j1, j1] + Conjugate[dZfR1[type, j1, j1]])
+
+mdZfRL1[ type_, j1_ ] :=
+  Mass[F[type, j1]]/2 *
+    (dZfR1[type, j1, j1] + Conjugate[dZfL1[type, j1, j1]])
+
+dZfL1cc[ type_, j1_ ] :=
+  dZfL1[type, j1, j1]/2 + Conjugate[dZfL1[type, j1, j1]]/2
+
+dZfR1cc[ type_, j1_ ] :=
+  dZfR1[type, j1, j1]/2 + Conjugate[dZfR1[type, j1, j1]]/2
+
+
+M$CouplingMatrices = {
+
+	(* F-F:  G(+) . { slash[mom1] omega[-], slash[mom2] omega[+],
+	                  omega[-], omega[+] } *)
+
+  C[ -F[1, {j1}], F[1, {j2}] ] == I IndexDelta[j1, j2] *
+    { {0, -dZfL1cc[1, j1]},
+      {0, dZfR1cc[1, j1]},
+      {0, -mdZfLR1[1, j1] - dMf1[1, j1]},
+      {0, -mdZfRL1[1, j1] - dMf1[1, j1]} },
+
+	(* V-V:  G(+) . { -g[mu, nu] mom^2, g[mu, nu], -mom[mu] mom[nu] } *)
+
+  C[ V[1], V[1] ] == I * 
+    { {0, dZAA1},
+      {0, 0},
+      {0, -dZAA1} },
+
+	(* F-F-V:  G(-) . { gamma[mu3] omega[-], gamma[mu3] omega[+] } *)
+
+  C[ -F[1, {j1}], F[1, {j2}], V[1] ] == I EL IndexDelta[j1, j2] *
+    { {1, dZe1 + dZAA1/2 + dZfL1cc[1, j1]},
+      {1, dZe1 + dZAA1/2 + dZfR1cc[1, j1]} }
+}
+
+
+M$LastModelRules = {}
+
+
+(* some short-hands for excluding classes of particles *)
+
+NoGeneration1 = ExcludeParticles -> F[_, {1}]
+
+NoGeneration2 = ExcludeParticles -> F[_, {2}]
+
+NoGeneration3 = ExcludeParticles -> F[_, {3}]
+
