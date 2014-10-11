@@ -2,7 +2,7 @@
 	Analytic.m
 		Translation of InsertFields output into
 		analytic expressions
-		last modified 19 Jul 13 th
+		last modified 10 Apr 14 th
 *)
 
 Begin["`Analytic`"]
@@ -510,6 +510,10 @@ Attributes[ FeynAmpDenominator ] = {Orderless}
 FeynAmpDenominator[ ] = 1
 
 
+LeviCivita[ lor__ ] := Signature[{lor}] LeviCivita@@ Sort[{lor}] /;
+  !OrderedQ[{lor}]
+
+
 SumOver[ i_, {}, ext___ ] := SumOver[i, 0, ext]
 
 SumOver[ i_, NoUnfold[l_], ext___ ] := SumOver[i, l, ext]
@@ -814,7 +818,7 @@ FeynAmpCases[ patt_, lev_:Infinity ][ amp_ ] := Cases[amp, patt, lev]
 
 
 FeynAmpExpr[ gr:FeynmanGraph[__, lev_ == _][__], top:P$Topology, h_ ] :=
-Block[ {$Verbose = 0},
+Block[ {FAPrint},
   CreateFeynAmp[ h[top -> toins[lev, gr]],
     AmplitudeLevel -> {lev} ]
 ]

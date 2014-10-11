@@ -1,8 +1,8 @@
 (*
 
-This is FeynArts, Version 3.8
-Copyright by Sepp Kueblbeck, Hagen Eck, and Thomas Hahn 1991-2012
-last modified 9 Jul 13 by Thomas Hahn
+This is FeynArts, Version 3.9
+Copyright by Sepp Kueblbeck, Hagen Eck, and Thomas Hahn 1991-2014
+last modified 11 Sep 14 by Thomas Hahn
 
 Release notes:
 
@@ -44,9 +44,9 @@ Have fun!
 
 
 Print[""];
-Print["FeynArts 3.8"];
+Print["FeynArts 3.9"];
 Print["by Hagen Eck, Sepp Kueblbeck, and Thomas Hahn"];
-Print["last revised 9 Jul 13"]
+Print["last revised 11 Sep 14"]
 
 
 BeginPackage["FeynArts`"]
@@ -117,8 +117,8 @@ ProcessName::usage =
 inserted topology or amplitude list amp which is unique to the model
 and particle selection."
 
-Pluralize::usage =
-"Pluralize is an internal function."
+NumberOf::usage =
+"NumberOf is an internal function."
 
 Statistics::usage =
 "Statistics is an internal function."
@@ -1207,6 +1207,11 @@ Incoming, Outgoing, External, and Internal."
 NonCommutative::usage =
 "NonCommutative is the head of noncommuting objects in a Feynman rule."
 
+LeviCivita::usage =
+"LeviCivita[mu, nu, ro, si] represents -I times the antisymmetric
+Levi-Civita tensor with Lorentz indices mu, nu, ro, si.  The sign
+convention is epsilon^{0123} = +1."
+
 MatrixTrace::usage =
 "MatrixTrace is the head of a trace of noncommuting objects (i.e. of
 symbols with head NonCommutative in the Feynman rules) in closed fermion
@@ -1362,10 +1367,11 @@ P$InsertionObjects = G[_][_][__][__] | _Mass | _GaugeXi |
 P$Options = (_Rule | _RuleDelayed)...
 
 
-$FeynArts = 3.8
+$FeynArts = 3.9
 
-$FeynArtsDir = DirectoryName[ File /.
-  FileInformation[System`Private`FindFile[$Input]] ]
+$FeynArtsDir = DirectoryName[
+  $InputFileName /. HoldPattern[$InputFileName] :>
+    (File /. FileInformation[System`Private`FindFile[$Input]]) ]
 
 $FeynArtsProgramDir = ToFileName[{$FeynArtsDir, "FeynArts"}]
 

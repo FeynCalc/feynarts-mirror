@@ -2,7 +2,7 @@
 	Insert.m
 		Insertion of fields into topologies created by 
 		CreateTopologies.
-		last modified 5 Jul 13 th
+		last modified 10 Jul 14 th
 
 The insertion is done in 3 levels: insertion of generic fields (Generic),
 of classes of a certain model (Classes) or of the members of the classes
@@ -252,14 +252,14 @@ ParticleLookup[ fp_, Rev[l_, r_] ] := ParticleLookup[fp, Mix[l, r], l]
 ParticleLookup[ fp_, p_ ] := ParticleLookup[fp, p, p]
 
 ParticleLookup[ fp_, mp_, p_ ] := Flatten[ Compatibles[mp, #]&/@
-  Lookup[ fp[[0, 1]] ][p, FieldPoint@@ (fp /. _Field -> p)] ]
+  FieldLookup[ fp[[0, 1]] ][p, FieldPoint@@ (fp /. _Field -> p)] ]
 
 
-Lookup[ cto_?NonNegative ] = PossibleFields[cto]
+FieldLookup[ cto_?NonNegative ] = PossibleFields[cto]
 
-Lookup[ cto_ ][ 0, fp_ ] := PossibleFields[-cto][0, fp]
+FieldLookup[ cto_ ][ 0, fp_ ] := PossibleFields[-cto][0, fp]
 
-Lookup[ _ ][ p_, fp_ ] :=
+FieldLookup[ _ ][ p_, fp_ ] :=
 Block[ {n = Position[fp, p, {1}, 1]},
   Select[
     Select[F$Classes, !FreeQ[#, p]&],
