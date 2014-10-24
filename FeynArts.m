@@ -2,7 +2,7 @@
 
 This is FeynArts, Version 3.9
 Copyright by Sepp Kueblbeck, Hagen Eck, and Thomas Hahn 1991-2014
-last modified 11 Sep 14 by Thomas Hahn
+last modified 24 Oct 14 by Thomas Hahn
 
 Release notes:
 
@@ -46,7 +46,7 @@ Have fun!
 Print[""];
 Print["FeynArts 3.9"];
 Print["by Hagen Eck, Sepp Kueblbeck, and Thomas Hahn"];
-Print["last revised 11 Sep 14"]
+Print["last revised 24 Oct 14"]
 
 
 BeginPackage["FeynArts`"]
