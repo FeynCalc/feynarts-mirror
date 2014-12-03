@@ -2,7 +2,7 @@
 	Analytic.m
 		Translation of InsertFields output into
 		analytic expressions
-		last modified 10 Apr 14 th
+		last modified 2 Dec 14 th
 *)
 
 Begin["`Analytic`"]
@@ -569,6 +569,9 @@ Block[ {vert, perm, ferm, kin, cv, cvr},
     kin = kin /. M$FlippingRules ];
 
   cv = SignResolve[sym, cvr = TheC[kin]@@ vert];
+
+  VertexMonitor[{"vert" -> vert, "kin" -> kin, "cv" -> cv,
+    "fi" -> {fi}, "cto" -> cto}];
 
   If[ !FreeQ[cv, TheC],
     Message[CreateFeynAmp::nocoupl, vert, kin];

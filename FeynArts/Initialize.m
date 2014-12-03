@@ -1,7 +1,7 @@
 (*
 	Initialize.m
 		Functions for the initialization of models
-		last modified 19 Jul 13 th
+		last modified 2 Dec 14 th
 *)
 
 Begin["`Initialize`"]
@@ -208,6 +208,7 @@ DumpModel[ modfile_String, other___ ] :=
 Options[ InitializeModel ] = {
   GenericModel -> "Lorentz",
   Reinitialize -> True,
+  TagCouplings -> False,
   GenericModelEdit :> Null,
   ModelEdit :> Null
 }
@@ -260,9 +261,10 @@ Please check your generic model file and try again."
 InitializeModel[ opt:P$Options ] := InitializeModel[{}, opt]
 
 InitializeModel[ model_, options:P$Options ] :=
-Block[ {reini, genmod, mod,
+Block[ {reini, tagcoup, genmod, mod,
 opt = ActualOptions[InitializeModel, options]},
   reini = TrueQ[Reinitialize /. opt];
+  tagcoup = TrueQ[TagCouplings /. opt];
 
   genmod = ToModelName[GenericModel /. opt];
   If[ reini || genmod =!= $GenericModel,
@@ -525,6 +527,15 @@ Assign[ fi__, PropagatorLabel -> b_ ] := TheLabel[fi] = b
 Assign[ fi__, a_ -> b_ ] := a[fi] = b
 
 
+TagCoupling[ x_, {_, 1, __} ] := x
+
+TagCoupling[ x_, {n__} ] := x Coupling[n]
+
+
+TagCoupling[ coup_ == expr_, {n_} ] := coup == 
+  MapIndexed[#1 Coupling[n, #2[[1]] - 1]&, expr, {2}]
+
+
 (* Initialization of a classes model: *)
 
 Attributes[ InitModel ] = {HoldAll}
@@ -584,7 +595,10 @@ Block[ {SVTheC, sv, unsortedFP, unsortedCT, savecp = $ContextPath},
     InitCoupling@@@ Block[ {Coup},
       _Coup = 0;
       TheCoeff[ fi_ ] := Throw[Message[InitializeModel::unknown, fi]];
-      Scan[SetCoupling, M$CouplingMatrices];
+      Scan[SetCoupling, If[ tagcoup, 
+        MapIndexed[TagCoupling, M$CouplingMatrices, {4}],
+      (* else *)
+        M$CouplingMatrices ]];
       TheCoeff[ fi_ ] =.;
       _Coup =.;
       DownValues[Coup]
