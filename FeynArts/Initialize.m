@@ -1,7 +1,7 @@
 (*
 	Initialize.m
 		Functions for the initialization of models
-		last modified 2 Dec 14 th
+		last modified 4 Dec 14 th
 *)
 
 Begin["`Initialize`"]
@@ -200,9 +200,13 @@ DumpGenericModel[ genfile_String, other___ ] :=
 Attributes[ DumpModel ] = {HoldRest}
 
 DumpModel[ modfile_String, other___ ] :=
+Block[ {IndexRange},
+  DownValues[IndexRange] = #;
+  IndexRange[error_] =.;
   WriteDefinitions[ modfile,
     M$ClassesDescription, M$CouplingMatrices, 
     M$LastModelRules, IndexRange, ViolatesQ, RenConst, other ]
+]& @ DownValues[IndexRange]
 
 
 Options[ InitializeModel ] = {

@@ -4,7 +4,7 @@
                 by Thomas Fritzsche, Thomas Hahn, Sven Heinemeyer, 
                 Heidi Rzehak and Christian Schappacher		
 		based on the Feynman rules of the MSSM by Arnd Kraft
-		last modified 16 Jan 2014 by Christian Schappacher
+		last modified 15 Jan 2015 by th
 
 History:
 May 2001: MSSM.mod created by Thomas Hahn.
@@ -8573,11 +8573,15 @@ M$CouplingMatrices = {
                   USf[3, j3][s4, 2])))))/(CW^4*MW^4*SB^3*SW^3)))}}, 
  C[S[1], V[2], V[1]] == {{0, ((I/2)*dZZA1*EL*MW*SBA)/(CW^2*SW)}}, 
  C[S[2], V[2], V[1]] == {{0, ((I/2)*CBA*dZZA1*EL*MW)/(CW^2*SW)}}, 
- C[S[5], V[1], -V[3]] == {{0, (I/2)*EL*MW*dZHiggs1[6, 5]}}, 
- C[-S[5], V[1], V[3]] == {{0, (I/2)*EL*MW*Conjugate[dZHiggs1[6, 5]]}}, 
- C[S[5], V[2], -V[3]] == {{0, ((-I/2)*EL*MW*SW*dZHiggs1[6, 5])/CW}}, 
- C[-S[5], V[2], V[3]] == {{0, ((-I/2)*EL*MW*SW*Conjugate[dZHiggs1[6, 5]])/
-     CW}}, C[S[5], -S[6], V[1]] == {{0, I*EL*dZHiggs1[6, 5]}}, 
+ C[S[5], V[1], -V[3]] == {{0,
+   I/2*EL*MW*(2 CB dSB1 - 2 dCB1 SB + dZHiggs1[6, 5])}}, 
+ C[-S[5], V[1], V[3]] == {{0, 
+   I/2*EL*MW*(2 CB dSB1 - 2 dCB1 SB + Conjugate[dZHiggs1[6, 5]])}}, 
+ C[S[5], V[2], -V[3]] == {{0,
+   -I/2*EL*MW*SW/CW*(2 CB dSB1 - 2 dCB1 SB + dZHiggs1[6, 5])}},
+ C[-S[5], V[2], V[3]] == {{0, 
+   -I/2*EL*MW*SW/CW*(2 CB dSB1 - 2 dCB1 SB + Conjugate[dZHiggs1[6, 5]])}},
+ C[S[5], -S[6], V[1]] == {{0, I*EL*dZHiggs1[6, 5]}}, 
  C[-S[5], S[6], V[1]] == 
   {{0, (I/2)*EL*(Conjugate[dZHiggs1[6, 5]] + dZHiggs1[5, 6])}}, 
  C[S[5], -S[6], V[2]] == {{0, ((-I/2)*(1 - 2*CW^2)*EL*dZHiggs1[6, 5])/
