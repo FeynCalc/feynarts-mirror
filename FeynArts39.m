@@ -2,7 +2,7 @@
 
 This is FeynArts, Version 3.9
 Copyright by Sepp Kueblbeck, Hagen Eck, and Thomas Hahn 1991-2014
-last modified 2 Dec 14 by Thomas Hahn
+last modified 4 Apr 15 by Thomas Hahn
 
 Release notes:
 
@@ -46,7 +46,7 @@ Have fun!
 Print[""];
 Print["FeynArts 3.9"];
 Print["by Hagen Eck, Sepp Kueblbeck, and Thomas Hahn"];
-Print["last revised 2 Dec 14"]
+Print["last revised 4 Apr 15"]
 
 
 BeginPackage["FeynArts`"]
@@ -543,16 +543,6 @@ initializes only the generic model."
 Reinitialize::usage =
 "Reinitialize is an option of InitializeModel.  InitializeModel will
 reinitialize the current model only if Reinitialize is set to True."
-
-TagCouplings::usage =
-"TagCouplings is an option of InitializeModel.  If True, all couplings
-will be tagged by Coupling[i], where i is the coupling's position in
-M$CouplingMatrices, such that parts of the amplitude can be traced back
-to specific couplings later."
-
-Coupling::usage =
-"Coupling[i...] is the identifier used to tag the coupling at
-M$CouplingMatrices[[i]]."
 
 GenericModelEdit::usage =
 "GenericModelEdit is an option of InitializeModel.  It specifies code
@@ -1064,12 +1054,8 @@ the corresponding topology of the diagram.  This function can be used
 to add graph information to the amplitude."
 
 VertexDebug::usage =
-"VertexDebug[info] is a function invoked whenever a vertex cannot be
-resolved.  It is used for debugging FeynArts."
-
-VertexMonitor::usage =
-"VertexMonitor[info] is a function invoked whenever a vertex is resolved. 
-It is used for debugging FeynArts."
+"VertexDebug[debuginfo] is a function invoked whenever a vertex cannot
+be resolved.  It is used for debugging FeynArts."
 
 VertexFunction::usage =
 "VertexFunction[o][f1, f2, ...] represents the 1PI vertex function of
@@ -1362,7 +1348,9 @@ P$Generic::usage =
 "P$Generic is the pattern for generic fields."
 
 P$NonCommuting::usage =
-"P$NonCommuting is the pattern for the non-commuting generic fields."
+"P$NonCommuting is the pattern for the non-commuting generic fields.
+A list {patt1, patt2, ...} (e.g. {F, U}) means that chains are built
+first particles matching patt1, then for patt2, etc."
 
 P$InsertionObjects::usage =
 "P$InsertionObjects matches the objects in the generic amplitude that
@@ -1373,7 +1361,7 @@ P$Topology = Topology[__] | Topology[_][__]
 
 P$Generic = F | S | V | T | U | _Mix | _Rev
 
-P$NonCommuting = F | U
+P$NonCommuting = {F, U}
 
 P$InsertionObjects = G[_][_][__][__] | _Mass | _GaugeXi |
   VertexFunction[_][__]
