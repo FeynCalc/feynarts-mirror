@@ -158,11 +158,11 @@
 
 \hfill\hbox{\underline{%
 \vrule width 0pt height 0pt depth 2ex%
-\Huge \FA\ 3.8~~~~~User's Guide}}
+\Huge \FA\ 3.9~~~~~User's Guide}}
 
 \vspace*{1ex}
 
-\hfill\hbox{Dec 2, 2014~~~~~Thomas Hahn}
+\hfill\hbox{Jun 10, 2015~~~~~Thomas Hahn}
 
 \clearpage
 
@@ -193,10 +193,8 @@ our code.
 If you're a lawyer, you will rejoice at the exact wording of the license 
 at \Code{http://www.fsf.org/copyleft/lgpl.html}.
 
-\FA\ is available from \Code{http://www.feynarts.de}.  If you make this
+\FA\ is available from \Code{http://feynarts.de}.  If you make this
 software available to others, please provide them with this manual, too.
-There exists a low-traffic mailing list where updates will be announced. 
-Contact \Code{hahn@feynarts.de} to be added to this list.
 
 If you find any bugs, or want to make suggestions, or just write fan mail,
 address it to:
@@ -247,10 +245,10 @@ The model information is contained in two special files:
 The \emph{generic model file} defines the representation of the
 kinematical quantities like spinors or vector fields.  The \emph{classes
 model file} sets up the particle content and specifies the actual
-couplings.  Since the user can create own model files, the applicability
+couplings.  Since users can create their own model files, the applicability
 of \FA\ is virtually unlimited within perturbative quantum field
-theory.  As generic model the Lorentz formalism (\Code{Lorentz.gen}) and as
-classes model the electroweak Standard Model in several variations 
+theory.  As a generic model the Lorentz formalism (\Code{Lorentz.gen}) and 
+as classes model the electroweak Standard Model in several variations 
 (\Code{SM.mod}, \Code{SMQCD.mod}, \Code{SMbgf.mod}), the Minimal 
 Supersymmetric Standard Model (\Code{MSSM.mod}, \Code{MSSMQCD.mod}), and
 the Two-Higgs-Doublet Model (\Code{THDM.mod}) are supplied.
@@ -283,10 +281,10 @@ Mixing propagators, such as appear in non-$R_\xi$-gauges, are supported.
 \FA\ produces publication-quality Feynman diagrams in PostScript or
 \LaTeX\ in a format that allows easy customization.
 \end{itemize}
-These features have been introduced in version 2 but have received some in
-parts considerable improvements in version 3.  The user interface, on the
-other hand, has through all versions suffered only minor and mostly
-backward-compatible changes, and the major functions can still be used in
+These features have been introduced in version 2 but some parts received 
+considerable improvements in version 3.  The user interface, on the other 
+hand, has through all versions suffered only minor and mostly 
+backward-compatible changes, and the major functions can still be used in 
 essentially the same way as in version 1.
 
 
@@ -355,9 +353,9 @@ may be omitted if it contains only one element, \eg
 
 Some \FA\ functions write messages to the screen to indicate their 
 progress.  These messages can be partially or completely suppressed by
-setting \Code{\$Verbose} to 0 (no messages) or 1 (summary messages only).
+setting \Code{\$FAVerbose} to 0 (no messages) or 1 (summary messages only).
 The default is 2 (all messages).%
-\indextt{\$Verbose}%
+\indextt{\$FAVerbose}%
 \index{screen messages}
 
 
@@ -530,9 +528,9 @@ creates topologies based on how many loops and external legs they have.
 \etab
 \mmaex{Load \FA.}{%
 {\sl In[1]:=}~<<~FeynArts`\\[1ex]
-FeynArts~3.6\\
+FeynArts~3.9\\
 by~Hagen~Eck,~Sepp~Kueblbeck,~and~Thomas~Hahn\\
-last~revised~21~Dec~10
+last~revised~32~Dec~15
 }
 \mmaex{Create all topologies with one loop, one incoming, and one
 outgoing line.  The results are collected in a \Code{TopologyList}.}{%
@@ -621,6 +619,11 @@ calculations of order \Vl.  Specifically,
 counter-term topologies needed for the topologies created by
 \Code{CreateTopologies[\Vl,\,\Vi\ -> \Vo]}. 
 
+\mmaex{Create all 2-loop counter-term topologies including the one-loop 
+subrenormalization.}{%
+{\sl In[4]:=}~CreateCTTopologies[2,~1~->~1];\\
+{\sl In[5]:=}~Paint[\%]\\
+\mmafig{figs/cttops1to1}}
 
 \subsection{Creating Topologies with generic Vertex Functions}
 \label{sect:1PIvf}
@@ -769,13 +772,13 @@ there are no special exclusion filters for the latter---one simply uses
 the filters for counter-terms.
 
 \mmaex{Create all $1\to 2$ topologies.}{%
-{\sl In[4]:=}~CreateTopologies[1,~1~->~2];\\
-{\sl In[5]:=}~Paint[\%,~ColumnsXRows~->~4]\\
+{\sl In[6]:=}~CreateTopologies[1,~1~->~2];\\
+{\sl In[7]:=}~Paint[\%,~ColumnsXRows~->~4]\\
 \mmafig{figs/tops1to2}}
 \mmaex{Now the same for irreducible topologies.}{%
-{\sl In[6]:=}~CreateTopologies[1,~1~->~2,\\
+{\sl In[8]:=}~CreateTopologies[1,~1~->~2,\\
 ~~~~~~~~~~ExcludeTopologies~->~Internal];\\
-{\sl In[7]:=}~Paint[\%,~ColumnsXRows~->~4]\\
+{\sl In[9]:=}~Paint[\%,~ColumnsXRows~->~4]\\
 \mmafig{figs/tops1to2irred}}
 
 \pagebreak
@@ -900,7 +903,7 @@ three-loop starting topologies.
 \indextt{SymmetryFactor}%
 \mmaex{You can also draw the starting topologies.  The cross marks a
 first-order and the circled cross a second-order counter-term.}{%
-{\sl In[8]:=}~Paint[StartTop[1,~2]]\\
+{\sl In[10]:=}~Paint[StartTop[1,~2]]\\
 \mmafig{figs/starttop1_2}}
 
 Up to three loops all starting topologies including the counter-terms are
@@ -1168,10 +1171,10 @@ this is \Code{InsertFields}.
 	outgoing fields are \Var{o_1}, \Var{o_2}, \dots
 \etab
 \mmaex{Create irreducible $1\to 2$ topologies.}{%
-{\sl In[9]:=}~t12~=~CreateTopologies[1,~1~->~2,\\
+{\sl In[11]:=}~t12~=~CreateTopologies[1,~1~->~2,\\
 ~~~~~~~~~~ExcludeTopologies~->~Internal];}
 \mmaex{Insert $Z\to b\overline{b}$.}{%
-{\sl In[10]:=}~InsertFields[~t12,\\
+{\sl In[12]:=}~InsertFields[~t12,\\
 ~~~~~~~~~~~V[2]~->~\Brac{F[4,~\Brac{3}],~-F[4,~\Brac{3}]}~];\\[1ex]
 loading~generic~model~file~Models/Lorentz.gen\\
 >~\$GenericMixing~is~OFF\\
@@ -1190,7 +1193,7 @@ inserting~at~level(s)~\Brac{Generic,~Classes}\\
 >~Top.~4:~0~Generic,~0~Classes~insertions\\
 in~total:~6~Generic,~14~Classes~insertions}
 \mmaex{\Code{Paint} works also with inserted topologies.}{%
-{\sl In[11]~:=}~Paint[\%,~ColumnsXRows~->~4,\\
+{\sl In[13]~:=}~Paint[\%,~ColumnsXRows~->~4,\\
 ~~~~~~~~~~~~PaintLevel~->~\Brac{Classes}]\\
 \mmafig{figs/Zbb}}
 
@@ -1377,7 +1380,7 @@ presence of fields or field points.
 
 \mmaex{Here is the $Z\to b\overline{b}$ example again.  Now we select
 only diagrams in which a W boson occurs.}{%
-{\sl In[12]:=}~InsertFields[~t12,\\
+{\sl In[14]:=}~InsertFields[~t12,\\
 ~~~~~~~~~~~V[2]~->~\Brac{F[4,~\Brac{3}],~-F[4,~\Brac{3}]},\\
 ~~~~~~~~~~~InsertionLevel~->~\Brac{Classes},\\
 ~~~~~~~~~~~LastSelections~->~V[3]~];\\[1ex]
@@ -1388,7 +1391,7 @@ inserting~at~level(s)~\Brac{Classes}\\
 >~Top.~4:~0~Classes~insertions\\
 in~total:~4~Classes~insertions}
 \mmaex{~}{%
-{\sl In[13]~:=}~Paint[\%,~ColumnsXRows~->~4]\\
+{\sl In[15]~:=}~Paint[\%,~ColumnsXRows~->~4]\\
 \mmafig{figs/Zbb_W}}
 
 
@@ -2222,8 +2225,8 @@ for auxiliary functions to use with these arguments.
 
 \mmaex{Create one diagram from the photon self-energy:
 \includegraphics[width=.75\linewidth]{figs/AA}}{%
-{\sl In[14]:=}~t11~=~CreateTopologies[1,~1~->~1][[3]];\\
-{\sl In[15]:=}~AA~=~InsertFields[t11,~V[1]~->~V[1],\\
+{\sl In[16]:=}~t11~=~CreateTopologies[1,~1~->~1][[3]];\\
+{\sl In[17]:=}~AA~=~InsertFields[t11,~V[1]~->~V[1],\\
 ~~~~~~~~~ExcludeParticles~->~\Brac{F,~V,~U}];\\[1ex]
 Excluding~3~Generic,~20~Classes,~and~36~Particles~fields\\[1ex]
 inserting~at~level(s)~\Brac{Generic,~Classes}\\
@@ -2231,11 +2234,11 @@ inserting~at~level(s)~\Brac{Generic,~Classes}\\
 in~total:~1~Generic,~1~Classes~insertions\\[1ex]
 Restoring~3~Generic,~20~Classes,~and~36~Particles~fields}
 \mmaex{Generate the amplitudes.}{%
-{\sl In[16]:=}~CreateFeynAmp[AA]\\[1ex]
+{\sl In[18]:=}~CreateFeynAmp[AA]\\[1ex]
 creating~amplitudes~at~level(s)~\Brac{Generic,~Classes}\\
 >~Top.~1:~1~Generic,~1~Classes~amplitudes\\
 in~total:~1~Generic,~1~Classes~amplitudes\\[1ex]
-{\sl Out[16]=}~FeynAmpList[\\
+{\sl Out[18]=}~FeynAmpList[\\
 ~~~~Model~->~SM,~GenericModel~->~Lorentz,\\
 ~~~~InsertionLevel~->~Classes,~Restrictions~->~\Brac{},\\
 ~~~~ExcludeParticles~->~\Brac{F,~V,~U},\\
@@ -2262,8 +2265,8 @@ $[(Mom[1]~-~Mom[2])[KI1[3]]],~RelativeCF\rbrac~->\\
 \mmaex{The \Code{CreateFeynAmp} output is by default displayed on the
 screen in a special human-readable format.  Its full internal
 representation is shown here.}{%
-{\sl In[17]:=}~InputForm[\%]\\[1ex]
-{\sl Out[17]/\!/InputForm=}\\
+{\sl In[19]:=}~InputForm[\%]\\[1ex]
+{\sl Out[19]/\!/InputForm=}\\
 ~~FeynAmpList[Model~->~"SM",~GenericModel~->~"Lorentz",\\
 ~~~~InsertionLevel~->~Classes,~Restrictions~->~\Brac{},\\
 ~~~~ExcludeParticles~->~\Brac{F,~V,~U},\\
@@ -4230,9 +4233,9 @@ counterparts.  All other fields are the same as in \Code{SM.mod}.
 \Code{S[10]} & $\hat H$ & \Code{S[1]} & $H$ \\
 \Code{S[20]} & $\hat G^0$ & \Code{S[2]} & $G^0$ \\
 \Code{S[30]} & $\hat G^-$ & \Code{S[3]} & $G^-$ \\
-\Code{SV[20]}\footnotemark & $\hat G$--$\hat Z$ &
+\Code{SV[20]}\footnotemark & $\hat G^0$--$\hat Z$ &
 \addtocounter{footnote}{-1}%
-  \Code{SV[2]}\footnotemark & $G$--$Z$ \\
+  \Code{SV[2]}\footnotemark & $G^0$--$Z$ \\
 \addtocounter{footnote}{-1}%
 \Code{SV[30]}\footnotemark & $\hat G^-$--$\hat W^-$ &
 \addtocounter{footnote}{-1}%
@@ -4829,7 +4832,7 @@ A.~Denner, H.~Eck, O.~Hahn, J.~K\"ublbeck, \np{B387}{92}{467}.
 
 \bibitem[Eck95]{Eck95}
 H.~Eck, Ph.D.\ thesis, University of W\"urzburg, 1995,
-available from \Code{http://www.feynarts.de}.
+available from \Code{http://feynarts.de}.
 
 \bibitem[HaI06]{HaI06}
 T.~Hahn, J.I.~Illana, \npps{160}{2006}{101} [hep-ph/0607049].
