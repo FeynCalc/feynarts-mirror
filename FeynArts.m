@@ -1,8 +1,8 @@
 (*
 
 This is FeynArts, Version 3.9
-Copyright by Sepp Kueblbeck, Hagen Eck, and Thomas Hahn 1991-2014
-last modified 4 Apr 15 by Thomas Hahn
+Copyright by Sepp Kueblbeck, Hagen Eck, and Thomas Hahn 1991-2015
+last modified 19 Jun 15 by Thomas Hahn
 
 Release notes:
 
@@ -41,12 +41,6 @@ announced.  Contact hahn@feynarts.de to be added to this list.
 Have fun!
 
 *)
-
-
-Print[""];
-Print["FeynArts 3.9"];
-Print["by Hagen Eck, Sepp Kueblbeck, and Thomas Hahn"];
-Print["last revised 4 Apr 15"]
 
 
 BeginPackage["FeynArts`"]
@@ -1371,11 +1365,17 @@ P$Options = (_Rule | _RuleDelayed)...
 
 $FeynArts = 3.9
 
+$FeynArtsVersion = "FeynArts 3.9 (19 Jun 2015)"
+
 $FeynArtsDir = DirectoryName[
   $InputFileName /. HoldPattern[$InputFileName] :>
     (File /. FileInformation[System`Private`FindFile[$Input]]) ]
 
 $FeynArtsProgramDir = ToFileName[{$FeynArtsDir, "FeynArts"}]
+
+Print[""];
+Print[$FeynArtsVersion];
+Print["by Hagen Eck, Sepp Kueblbeck, and Thomas Hahn"];
 
 
 Get[ ToFileName[$FeynArtsDir, "Setup.m"] ]
