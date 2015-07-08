@@ -2,7 +2,7 @@
 
 This is FeynArts, Version 3.9
 Copyright by Sepp Kueblbeck, Hagen Eck, and Thomas Hahn 1991-2015
-last modified 19 Jun 15 by Thomas Hahn
+last modified 8 Jul 15 by Thomas Hahn
 
 Release notes:
 
@@ -53,6 +53,10 @@ FAPrint::usage =
 ActualOptions::usage =
 "ActualOptions[sym, options] returns a list of options of sym with the
 valid options of sym replaced by their actual values."
+
+SelectOptions::usage =
+"SelectOptions[fun, options] selects from options those that belong to
+fun."
 
 ResolveLevel::usage =
 "ResolveLevel[lev] returns a full set of levels selected by lev.  For
@@ -1365,7 +1369,7 @@ P$Options = (_Rule | _RuleDelayed)...
 
 $FeynArts = 3.9
 
-$FeynArtsVersion = "FeynArts 3.9 (19 Jun 2015)"
+$FeynArtsVersion = "FeynArts 3.9 (8 Jul 2015)"
 
 $FeynArtsDir = DirectoryName[
   $InputFileName /. HoldPattern[$InputFileName] :>
