@@ -2,7 +2,7 @@
 	Analytic.m
 		Translation of InsertFields output into
 		analytic expressions
-		last modified 4 Apr 15 th
+		last modified 23 Sep 15 th
 *)
 
 Begin["`Analytic`"]
@@ -772,11 +772,11 @@ DiagramDelete[ other_, n__ ] := Delete[other, ExpandRanges[n]]
 
 
 DiagramMap[ foo_, tops:(h_TopologyList)[__] ] :=
-Block[ {lev, Rule},
+Block[ {lev},
   lev = ResolveLevel[InsertionLevel /. List@@ h][[-1]];
-  Rule[_] := Sequence[];
   Apply[ #1 -> (#2 /. gr:FeynmanGraph[__, lev == _][__] :> foo[gr, #1, h])&,
       tops, 1 ] /.
+    (_[] -> Insertions[_][__]) :> Seq[] /.
     (FeynmanGraph[__][__] -> _[]) :> Seq[] /.
     (Topology[__][__] -> _[]) :> Seq[]
 ]
