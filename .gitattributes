@@ -1,0 +1,7 @@
+*.m linguist-language=Mathematica
+*.Mod linguist-language=Mathematica
+*.Gen linguist-language=Mathematica
+*.pro linguist-language=PostScript
+*.prologue linguist-language=PostScript
+
+
