@@ -2,14 +2,14 @@
 	Analytic.m
 		Translation of InsertFields output into
 		analytic expressions
-		last modified 23 Sep 15 th
+		last modified 29 Oct 15 th
 *)
 
 Begin["`Analytic`"]
 
 Options[ CreateFeynAmp ] = {
   AmplitudeLevel -> InsertionLevel,	(* i.e. taken from InsertFields *)
-  GaugeRules -> {_GaugeXi -> 1},
+  GaugeRules -> _GaugeXi -> 1,
   PreFactor -> -I (2 Pi)^(-4 LoopNumber),
   Truncated -> False,
   MomentumConservation -> True,
