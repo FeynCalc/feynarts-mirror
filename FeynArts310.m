@@ -1,8 +1,8 @@
 (*
 
 This is FeynArts, Version 3.10
-Copyright by Sepp Kueblbeck, Hagen Eck, and Thomas Hahn 1991-2017
-last modified 16 Mar 18 by Thomas Hahn
+Copyright by Sepp Kueblbeck, Hagen Eck, and Thomas Hahn 1991-2018
+last modified 11 Jul 18 by Thomas Hahn
 
 Release notes:
 
@@ -551,15 +551,24 @@ i1, i2, i3."
 
 (* definitions for Initialize.m *)
 
+ReadGenericModel::usage =
+"ReadGenericModel[genname] reads the generic model file(s) genname.gen. 
+ReadGenericModel[genname, ext] specifies an explicit extension, i.e.
+reads genname.ext."
+
 LoadGenericModel::usage =
-"LoadGenericModel[genname] loads the generic model file(s) genname.gen. 
-LoadGenericModel[genname, ext] specifies an explicit extension, i.e.
-loads genname.ext."
+"LoadGenericModel works like ReadGenericModel except that it clears
+existing generic model definitions before and aborts if the generic
+model is incomplete."
+
+ReadModel::usage =
+"ReadModel[modname] reads the classes model file(s) modname.mod. 
+ReadModel[modname, ext] specifies an explicit extension, i.e. reads
+modname.ext."
 
 LoadModel::usage =
-"LoadModel[modname] loads the classes model file(s) modname.mod. 
-LoadModel[modname, ext] specifies an explicit extension, i.e. loads
-modname.ext."
+"LoadModel works like ReadModel except that it clears existing model
+definitions before and aborts if the model is incomplete."
 
 DumpGenericModel::usage =
 "DumpGenericModel[genfile] saves the generic model file presently in
@@ -1461,7 +1470,7 @@ P$Options = (_Rule | _RuleDelayed)...
 
 $FeynArts = 3.10
 
-$FeynArtsVersion = "FeynArts 3.10 (12 Mar 2018)"
+$FeynArtsVersion = "FeynArts 3.10 (11 Jul 2018)"
 
 $FeynArtsDir = DirectoryName[
   $InputFileName /. HoldPattern[$InputFileName] :>

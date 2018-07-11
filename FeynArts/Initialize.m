@@ -1,7 +1,7 @@
 (*
 	Initialize.m
 		Functions for the initialization of models
-		last modified 15 Mar 18 th
+		last modified 9 Jul 18 th
 *)
 
 Begin["`Initialize`"]
@@ -127,8 +127,7 @@ FindDiff[ {}, r__ ] := Replace[Flatten/@ {r}, x_ == _ :> x, {2}]
 General::genmiss =
 "Definition missing in generic model file."
 
-LoadGenericModel[ genmod_, ext_String:".gen" ] :=
-Block[ {olditems = 0},
+LoadGenericModel[ args__ ] := (
   M$GenericPropagators := (
     Message[M$GenericPropagators::genmiss];
     Abort[]; );
@@ -136,7 +135,11 @@ Block[ {olditems = 0},
     Message[M$GenericCouplings::genmiss];
     Abort[]; );
   M$FlippingRules = M$TruncationRules = M$LastGenericRules = {};
+  ReadGenericModel[args]
+)
 
+ReadGenericModel[ genmod_, ext_String:".gen" ] :=
+Block[ {olditems = 0},
   ReadModelFile[
     {M$GenericPropagators, M$GenericCouplings,
       M$FlippingRules, M$TruncationRules, M$LastGenericRules},
@@ -147,8 +150,7 @@ Block[ {olditems = 0},
 General::modmiss =
 "Definition missing in classes model file."
 
-LoadModel[ mod_, ext_String:".mod" ] :=
-Block[ {olditems = 0},
+LoadModel[ args__ ] := (
   M$ClassesDescription := (
     Message[M$ClassesDescription::modmiss];
     Abort[]; );
@@ -156,7 +158,11 @@ Block[ {olditems = 0},
     Message[M$CouplingMatrices::modmiss];
     Abort[]; );
   M$LastModelRules = {};
+  ReadModel[args]
+)
 
+ReadModel[ mod_, ext_String:".mod" ] :=
+Block[ {olditems = 0},
   ReadModelFile[
     {M$ClassesDescription, M$CouplingMatrices, M$LastModelRules},
     "classes", ext ]/@ ToModelName[mod]
