@@ -2,7 +2,7 @@
 
 This is FeynArts, Version 3.10
 Copyright by Sepp Kueblbeck, Hagen Eck, and Thomas Hahn 1991-2018
-last modified 11 Jul 18 by Thomas Hahn
+last modified 3 Sep 18 by Thomas Hahn
 
 Release notes:
 
@@ -30,13 +30,10 @@ http://www.feynarts.de.
 If you find any bugs, or want to make suggestions, or
 just write fan mail, address it to:
 	Thomas Hahn
-	Max-Planck-Institute for Physics
+	Max Planck Institute for Physics
 	Foehringer Ring 6
 	D-80805 Munich, Germany
 	e-mail: hahn@feynarts.de
-
-There exists a low-traffic mailing list where updates will be
-announced.  Contact hahn@feynarts.de to be added to this list. 
 
 Have fun!
 
@@ -1030,19 +1027,24 @@ C[fi] == coupl used as an entry in the M$CouplingMatrices list in the
 classes model file defines the coupling of the fields fi."
 
 CC::usage =
-"CC[fields] == coupl may be used in the M$CouplingMatrices list in the
-classes model file to define the coupling of the fields fi, together
+"CC[fields] == coup may be used in the M$CouplingMatrices list in the
+classes model file to define the coupling of the fields fi together
 with the conjugate coupling in one line.  The conjugation is performed
 with the function ConjugateCoupling which must be defined accordingly. 
 If no definition is made, the final amplitudes will simply contain the
 symbol ConjugateCoupling."
 
 ConjugateCoupling::usage =
-"ConjugateCoupling[coupl] defines how the charge-conjugated coupling is
-derived from coupl.  Typically, one I multiplying the coupling constant
+"ConjugateCoupling[coup] defines how the charge-conjugated coupling is
+derived from coup.  Typically, one I multiplying the coupling constant
 must not be conjugated because it derives from the exponent of the path
 integral.  If no definition is made for ConjugateCoupling, the final
 amplitudes will contain this symbol."
+
+TreeCouplings::usage =
+"TreeCouplings[All] returns M$CouplingMatrices with higher-order
+couplings removed.  TreeCouplings[] further removes couplings that
+have no tree-level part."
 
 GetCouplings::usage =
 "GetCouplings[C[fi], ...] returns all couplings of the form C[fi] == _
@@ -1470,7 +1472,7 @@ P$Options = (_Rule | _RuleDelayed)...
 
 $FeynArts = 3.10
 
-$FeynArtsVersion = "FeynArts 3.10 (11 Jul 2018)"
+$FeynArtsVersion = "FeynArts 3.10 (3 Sep 2018)"
 
 $FeynArtsDir = DirectoryName[
   $InputFileName /. HoldPattern[$InputFileName] :>

@@ -1,7 +1,7 @@
 (*
 	Initialize.m
 		Functions for the initialization of models
-		last modified 9 Jul 18 th
+		last modified 3 Sep 18 th
 *)
 
 Begin["`Initialize`"]
@@ -659,6 +659,13 @@ ToPatt[ s_. f:P$Generic[__] ] :=
 ToPatt[ other_ ] := other
 
 patt = Pattern[#, _]&
+
+
+treeonly[ c_ == rhs_List ] := c == (Take[#, 1]&/@ rhs)
+
+TreeCouplings[ All ] := treeonly/@ M$CouplingMatrices
+
+_TreeCouplings := DeleteCases[TreeCouplings[All], _ == {{0}..}]
 
 
 GetCouplings[ c__C ] := Cases[M$CouplingMatrices, ToPatt[c] == _]
