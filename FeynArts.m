@@ -2,7 +2,7 @@
 
 This is FeynArts, Version 3.10
 Copyright by Sepp Kueblbeck, Hagen Eck, and Thomas Hahn 1991-2018
-last modified 3 Sep 18 by Thomas Hahn
+last modified 23 Oct 18 by Thomas Hahn
 
 Release notes:
 
@@ -597,6 +597,18 @@ ModelEdit::usage =
 be executed directly after loading the classes model, i.e. before the
 actual initialization."
 
+CloseKinematicVector::usage =
+"CloseKinematicVector/@ M$GenericCouplings adds to the kinematic vectors
+of the couplings in M$GenericCouplings the elements to 'close' them
+under permutations.  CloseKinematicVector adds appropriate definitions
+of CloseCouplingVector which must be used on the M$CouplingMatrices
+during the initialization of the classes model."
+
+CloseCouplingVector::usage =
+"CloseCouplingVector/@ M$CouplingMatrices arranges the coupling vectors
+of the couplings in M$CouplingMatrices to be consistent with the closed
+kinematic vectors of the generic model file."
+
 RestrictCurrentModel::usage =
 "RestrictCurrentModel[args] applies a number of ExcludeFieldPoints and
 ExcludeParticles restrictions to the current model. 
@@ -1041,14 +1053,12 @@ must not be conjugated because it derives from the exponent of the path
 integral.  If no definition is made for ConjugateCoupling, the final
 amplitudes will contain this symbol."
 
-TreeCouplings::usage =
-"TreeCouplings[All] returns M$CouplingMatrices with higher-order
-couplings removed.  TreeCouplings[] further removes couplings that
-have no tree-level part."
+Couplings::usage =
+"Couplings[cto, All] returns the couplings of counter-term order cto.
+Couplings[cto] removes the all-zero couplings from Couplings[cto, All]."
 
 GetCouplings::usage =
-"GetCouplings[C[fi], ...] returns all couplings of the form C[fi] == _
-in M$CouplingMatrices."
+"GetCouplings[C[fi], ...] returns all couplings of the form C[fi] == _."
 
 ReplaceCouplings::usage =
 "ReplaceCouplings[C[fi] == coup] replaces all couplings matching C[fi]
@@ -1472,7 +1482,7 @@ P$Options = (_Rule | _RuleDelayed)...
 
 $FeynArts = 3.10
 
-$FeynArtsVersion = "FeynArts 3.10 (3 Sep 2018)"
+$FeynArtsVersion = "FeynArts 3.10 (23 Oct 2018)"
 
 $FeynArtsDir = DirectoryName[
   $InputFileName /. HoldPattern[$InputFileName] :>
