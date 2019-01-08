@@ -1,7 +1,7 @@
 (*
 	Initialize.m
 		Functions for the initialization of models
-		last modified 23 Oct 18 th
+		last modified 7 Jan 19 th
 *)
 
 Begin["`Initialize`"]
@@ -545,11 +545,9 @@ Block[ {pattcpl, perm, inv, clokin, i},
 NewComp[ c_List ] := Table[0, {Length[c]}]
 
 
-AllFields[ fi:_Mix[_] ] := 
-  If[ SelfConjugate[fi], #, {#, -#} ]&[ {fi, 2 fi} ]
-
-AllFields[ fi_ ] :=
-  If[ SelfConjugate[fi], fi, {fi, -fi} ]
+AllFields[ fi_ ] := Outer[Times,
+  Range[Length[MixingPartners[fi]]],
+  If[SelfConjugate[fi], {1}, {1, -1}], {fi}]
 
 
 Attributes[ ClearDefs ] = {HoldAll}
@@ -1087,7 +1085,7 @@ IndexStyle[ other_ ] := other
 
 
 (* Note: AntiParticle[...] := AntiParticle[...] = ... is not possible
-   because if another model with different SelfConjugate behaviour is
+   because if another model with different SelfConjugate properties is
    loaded, AntiParticle must be rebuilt. *)
 
 AntiParticle[ 0 ] = 0
