@@ -2,7 +2,7 @@
 
 This is FeynArts, Version 3.10
 Copyright by Sepp Kueblbeck, Hagen Eck, and Thomas Hahn 1991-2019
-last modified 7 Jan 19 by Thomas Hahn
+last modified 9 Jan 19 by Thomas Hahn
 
 Release notes:
 
@@ -1482,7 +1482,7 @@ P$Options = (_Rule | _RuleDelayed)...
 
 $FeynArts = 3.10
 
-$FeynArtsVersion = "FeynArts 3.10 (7 Jan 2019)"
+$FeynArtsVersion = "FeynArts 3.10 (9 Jan 2019)"
 
 $FeynArtsDir = DirectoryName[
   $InputFileName /. HoldPattern[$InputFileName] :>
