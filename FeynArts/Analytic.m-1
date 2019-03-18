@@ -2,7 +2,7 @@
 	Analytic.m
 		Translation of InsertFields output into
 		analytic expressions
-		last modified 14 Mar 19 th
+		last modified 8 Mar 19 th
 *)
 
 Begin["`Analytic`"]
@@ -394,15 +394,16 @@ MTFIndex[i_, _. fi_[n_, ind_]] :=
 NonCommutative[1] = Sequence[]
 
 
-SignedMixers[fi_] := Last[MixingPartners[fi]] /; FreeQ[fi, Generic]
+SignedMixers[fi_] := MixingPartners[fi][[-1]] /; FreeQ[fi, Generic]
 
-SignedMixers[s_. fi_[x__]] := s Last[MixingPartners[fi]][x]
+SignedMixers[-fi_[x__]] := -MixingPartners[AntiParticle[fi]][[-1]][x]
+
+SignedMixers[fi_[x__]] := MixingPartners[fi][[-1]][x]
 
 
 ResolveGeneric[vert:Vertex[_, cto_:0][_], chainprops___] :=
 Block[ {v, perm},
-  v = Level[TakeInc[vert]/@ Flatten[{chainprops, props}], {2}];
-  v = SignedMixers/@ v;
+  v = SignedMixers/@ Level[TakeInc[vert]/@ Flatten[{chainprops, props}], {2}];
   perm = FindVertex[ToGeneric[v], Generic];
   If[ perm === $Failed, Return[{}] ];
   v = v[[perm]];
@@ -531,12 +532,13 @@ SumOver[i_, r:{___, l_Integer}, ext___] :=
 c_CreateAmpIns[gr_ -> ins_] := c[gr] -> c/@ ins
 
 CreateAmpIns[top_, gm_, symgen_][gr:FeynmanGraph[sym_, ___][ru__]] :=
-Block[ {ins, vert, deltas, ext, int},
+Block[ {ext, int, ins, deltas},
   ins = ReplacePart[gm, symgen/sym, -1] /. {ru} /.
     anti -> AntiParticle /.
     track[s_. fi_[n__], k__] :> s fi[n, k];
-  vert = Union[Cases[ins, G[_][cto_][fi__][_] :> FieldPoint[cto][fi]]];
-  deltas = DeleteCases[Union@@ CouplingDeltas/@ vert, _Integer];
+  deltas = DeleteCases[ Union@@ CouplingDeltas/@
+    Union[Cases[ins, G[_][cto_][fi__][_] :> FieldPoint[cto][fi]]],
+    _Integer ];
   ins = ins /. G -> GtoC /. Mass -> TheMass /. gaugeru /.
     _MTF -> 1 /. Thread[deltas -> 1];
   ext = Union[Cases[Take[{ru}, next], _Index, Infinity]];

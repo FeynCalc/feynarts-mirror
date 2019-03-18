@@ -2,7 +2,7 @@
 
 This is FeynArts, Version 3.11
 Copyright by Sepp Kueblbeck, Hagen Eck, and Thomas Hahn 1991-2019
-last modified 7 Mar 19 by Thomas Hahn
+last modified 14 Mar 19 by Thomas Hahn
 
 Release notes:
 
@@ -1112,6 +1112,10 @@ two arguments, f[rul, top], where rul are the insertion rules and top
 the corresponding topology of the diagram.  This function can be used
 to add graph information to the amplitude."
 
+VertexMonitor::usage =
+"VertexMonitor[debuginfo] is a function invoked when looking up a vertex. 
+It is used for debugging FeynArts."
+
 VertexDebug::usage =
 "VertexDebug[debuginfo] is a function invoked whenever a vertex cannot
 be resolved.  It is used for debugging FeynArts."
@@ -1488,7 +1492,7 @@ $FeynArts = {3, 11}
 
 $FeynArtsVersionNumber = 3.11
 
-$FeynArtsVersion = "FeynArts 3.11 (7 Mar 2019)"
+$FeynArtsVersion = "FeynArts 3.11 (14 Mar 2019)"
 
 $FeynArtsDir = DirectoryName[
   $InputFileName /. HoldPattern[$InputFileName] :>

@@ -1,7 +1,7 @@
 (*
 	Initialize.m
 		Functions for the initialization of models
-		last modified 14 Mar 19 th
+		last modified 6 Mar 19 th
 *)
 
 Begin["`Initialize`"]
@@ -367,9 +367,6 @@ Block[ {savecp = $ContextPath},
 
   SubValues[AnalyticalPropagator] =
     InitGenericPropagator@@@ M$GenericPropagators;
-  AnalyticalPropagator[type_][s_. Rev[fi__][i__]] :=
-    AnalyticalPropagator[type][s Mix[fi][i] /. r_Rule :> Reverse[r]];
-
   SubValues[AnalyticalCoupling] =
     InitGenericCoupling@@@ M$GenericCouplings;
 
