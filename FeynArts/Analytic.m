@@ -2,7 +2,7 @@
 	Analytic.m
 		Translation of InsertFields output into
 		analytic expressions
-		last modified 14 Mar 19 th
+		last modified 20 Mar 19 th
 *)
 
 Begin["`Analytic`"]
@@ -271,15 +271,17 @@ scalars = {RelativeCF, toppref, 1/sym}},
 
 AddKinematicIndices[Propagator[type_][vert__, s_. fi_[ind___], mom_]] :=
   Propagator[type][ vert,
-    s fi[ind, ResolveType[type], mom, KIx[vert][KinematicIndices[fi]]] ]
+    s fi[ind, ResolveType[type], mom, 
+      KIv[vert] @ Level[KinematicIndices[fi], {-2}]] ]
 
-_KIx[{}] = Sequence[]
 
-v_KIx[ki_] := If[FreeQ[v, Vertex[1]], kix[ki] -> kix[ki], kix[ki]]
+_KIv[{{}..}] = Sequence[]
 
-Attributes[kix] = {Listable}
+v_KIv[ki_] := If[ FreeQ[v, Vertex[1]],
+  kind/@ First[ki] -> kind/@ Last[ki],
+  kind/@ Last[ki] ]
 
-kix[ki_] := Index[ki, ++c[ki]]
+kind[ki_] := Index[ki, ++c[ki]]
 
 
 (* Building fermion chains.
@@ -484,6 +486,10 @@ Block[ {s},
 TakeNC[f_Times] := TakeNC[List@@ f]
 
 TakeNC[f_] := TakeNC[{f}]
+
+
+PropagatorDenominator[p_, m_, d___]^n_. ^:=
+  PropagatorDenominator[p, m, d + n]
 
 
 LoopPD[p_] := p /; FreeQ[p, Internal]

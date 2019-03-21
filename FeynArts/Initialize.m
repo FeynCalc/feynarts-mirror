@@ -1,7 +1,7 @@
 (*
 	Initialize.m
 		Functions for the initialization of models
-		last modified 14 Mar 19 th
+		last modified 20 Mar 19 th
 *)
 
 Begin["`Initialize`"]
@@ -492,10 +492,10 @@ Off[RuleDelayed::rhs]
 
 PropFieldPattern[fi_[i_Symbol, m_Symbol]] := fi[i__, m_]
 
-PropFieldPattern[fi_[i_Symbol, m_Symbol, ki:{__Symbol}]] := 
+PropFieldPattern[fi_[i_Symbol, m_Symbol, ki:{___Symbol}]] := 
   fi[i__, m_, patt/@ ki]
 
-PropFieldPattern[fi_[i_Symbol, m_Symbol, ki:({__Symbol} -> {__Symbol})]] := 
+PropFieldPattern[fi_[i_Symbol, m_Symbol, ki:({___Symbol} -> {___Symbol})]] := 
   fi[i__, m_, Map[patt, ki, {2}]]
 
 PropFieldPattern[s_Symbol fi:_[___]] := s_. PropFieldPattern[fi]
@@ -510,7 +510,7 @@ CoupFieldPattern[f:fi_[i_Symbol, m_Symbol]] := (
 CoupFieldPattern[f:fi_[i_Symbol, m_Symbol, ki:{__Symbol}]] := 
   fi[i__, m_, KinIndices[f, ki]]
 
-CoupFieldPattern[fi_[i_Symbol, m_Symbol, ki1:{__Symbol} -> ki2:{__Symbol}]] := 
+CoupFieldPattern[f:fi_[i_Symbol, m_Symbol, ki1:{__Symbol} -> ki2:{__Symbol}]] := 
   fi[i__, m_, KinIndices[f, ki1] -> KinIndices[f, ki2]]
 
 CoupFieldPattern[s_Symbol fi:_[___]] := s_. CoupFieldPattern[fi]
@@ -1007,7 +1007,9 @@ AddHC[h_, weight_:(1&)] :=
   weight[j, i] Conjugate[h]/2
 
 
-KinematicIndices[Rev[fi__]] := KinematicIndices[Mix[fi]]
+KinematicIndices[Mix[fi__]] := KinematicIndices/@ {fi}
+
+KinematicIndices[Rev[fi__]] := KinematicIndices[Mix[fi]] /. l:{__List} :> Reverse[l]
 
 _KinematicIndices = {}
 
