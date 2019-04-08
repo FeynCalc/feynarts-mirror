@@ -1,7 +1,7 @@
 (*
 	Initialize.m
 		Functions for the initialization of models
-		last modified 20 Mar 19 th
+		last modified 31 Mar 19 th
 *)
 
 Begin["`Initialize`"]
@@ -342,13 +342,23 @@ Block[ {savecp = $ContextPath},
   _Compatibles[fi_] := {fi};
 
   F$Generic = Union[ToGeneric[#[[1,1]]&/@ M$GenericPropagators]];
+
+  SubValues[AnalyticalPropagator] =
+    InitGenericPropagator@@@ M$GenericPropagators;
+  SubValues[AnalyticalCoupling] =
+    InitGenericCoupling@@@ M$GenericCouplings;
+
   If[ TrueQ[$GenericMixing],
     FAPrint[2, "> $GenericMixing is ON"];
     F$Generic = Flatten[{F$Generic,
       Cases[F$Generic, Mix[L_,R_] :> (
         Attach[Compatibles[0][R], Mix[L,R]];
         Attach[Compatibles[0][L], Rev[L,R]];
-        Rev[L,R] )]}],
+        Rev[L,R] )]}];
+    AnalyticalPropagator[Internal][s_. Rev[fi__][i__]] :=
+      AnalyticalPropagator[Internal][s Mix[fi][i] /. r_Rule :> Reverse[r]];
+    AnalyticalPropagator[External][s_. (fi:(_Mix | _Rev)[__])] :=
+      AnalyticalPropagator[External][s MixingPartners[fi][[-1]]],
   (* else *)
     FAPrint[2, "> $GenericMixing is OFF"]
   ];
@@ -364,14 +374,6 @@ Block[ {savecp = $ContextPath},
 
   PossibleFields[_][__] = {};
   SetPossibleFields[_, Table[0, {Length[#]}]&, FieldPointList[Generic]];
-
-  SubValues[AnalyticalPropagator] =
-    InitGenericPropagator@@@ M$GenericPropagators;
-  AnalyticalPropagator[type_][s_. Rev[fi__][i__]] :=
-    AnalyticalPropagator[type][s Mix[fi][i] /. r_Rule :> Reverse[r]];
-
-  SubValues[AnalyticalCoupling] =
-    InitGenericCoupling@@@ M$GenericCouplings;
 
   $ContextPath = savecp;
   FAPrint[1, "generic model ", $GenericModel, " initialized"];
@@ -500,22 +502,24 @@ PropFieldPattern[fi_[i_Symbol, m_Symbol, ki:({___Symbol} -> {___Symbol})]] :=
 
 PropFieldPattern[s_Symbol fi:_[___]] := s_. PropFieldPattern[fi]
 
-PropFieldPattern[fi_] := (Message[InitializeModel::nosymb, FullForm[fi]]; Abort[])
+PropFieldPattern[fi_] :=
+  (Message[InitializeModel::nosymb, FullForm[fi]]; Abort[])
 
 
 CoupFieldPattern[f:fi_[i_Symbol, m_Symbol]] := (
   If[Length[KinematicIndices[fi]] =!= 0, Message[InitializeModel::kinind, f]];
   fi[i__, m_, ___List] )
 
-CoupFieldPattern[f:fi_[i_Symbol, m_Symbol, ki:{__Symbol}]] := 
+CoupFieldPattern[f:fi_[i_Symbol, m_Symbol, ki:{__Symbol}]] :=
   fi[i__, m_, KinIndices[f, ki]]
 
-CoupFieldPattern[f:fi_[i_Symbol, m_Symbol, ki1:{__Symbol} -> ki2:{__Symbol}]] := 
+CoupFieldPattern[f:fi_[i_Symbol, m_Symbol, ki1:{__Symbol} -> ki2:{__Symbol}]] :=
   fi[i__, m_, KinIndices[f, ki1] -> KinIndices[f, ki2]]
 
 CoupFieldPattern[s_Symbol fi:_[___]] := s_. CoupFieldPattern[fi]
 
-CoupFieldPattern[fi_] := (Message[InitializeModel::nosymb, FullForm[fi]]; Abort[])
+CoupFieldPattern[fi_] :=
+  (Message[InitializeModel::nosymb, FullForm[fi]]; Abort[])
 
 
 KinIndices[f_, ki_] := (
