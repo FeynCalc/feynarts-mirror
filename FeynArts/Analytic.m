@@ -2,7 +2,7 @@
 	Analytic.m
 		Translation of InsertFields output into
 		analytic expressions
-		last modified 20 Mar 19 th
+		last modified 11 Apr 19 th
 *)
 
 Begin["`Analytic`"]
@@ -148,7 +148,7 @@ If[ $VersionNumber < 7,
 
 (* loop number using Euler's relation: *)
 
-Genus[top_] := 
+Genus[top_] :=
 Block[ {c, vn = {}},
   c[n_] := (AppendTo[vn, n]; 0);
   ++c[ #[[0,1]] ]&/@ Union[Cases[top, Vertex[__][_], {2}]];
@@ -197,21 +197,21 @@ MomConservation[top_, vert_] := Throw[top] /; FreeQ[top, ZZZ]
 
 MomConservation[top_, vert_] :=
 Block[ {eq},
-  eq = Plus@@ (IncomingMomentum[vert, #]&)/@ top;
+  eq = Plus@@ IncomingMomentum[vert]@@@ top;
   If[ eq === 0 || (Head[eq] === Plus && FreeQ[eq, ZZZ]), top,
-    top /. If[ Head[eq] =!= Plus, eq -> 0,
-      Solve[ eq == 0,
-        Sort[Cases[{eq}, _FourMomentum, Infinity]][[-1]] ][[1]] ]
+    top /. If[ Head[eq] =!= Plus, eq -> zero[eq],
+      First[Solve[ eq == 0,
+        Last[Sort[Cases[{eq}, _FourMomentum, Infinity]]] ]] ]
   ]
 ]
 
-IncomingMomentum[v_, _[v_, v_, ___]] := 0
+IncomingMomentum[v_][v_, v_, ___] := 0
 
-IncomingMomentum[v_, _[v_, _, ___, m_]] := -m
+IncomingMomentum[v_][v_, _, ___, m_] := -m
 
-IncomingMomentum[v_, _[_, v_, ___, m_]] := m
+IncomingMomentum[v_][_, v_, ___, m_] := m
 
-IncomingMomentum[__] = 0
+IncomingMomentum[_][__] = 0
 
 
 CreateAmpGraph[top_][gr:FeynmanGraph[sym_, ___][__] -> ins_] :=
@@ -245,7 +245,7 @@ scalars = {RelativeCF, toppref, 1/sym}},
   If[ $FermionLines, res = MakeFermionChains[res] ];
 
 	(* props contains the propagators not involved in gmcs *)
-  props = Cases[res, Propagator[_][__]];
+  props = Cases[res, Propagator[_][__]] /. _zero -> 0;
   vert = Vertices[props];
 
 	(* insert the vertices in fermion chains first.
@@ -465,8 +465,11 @@ FermionChain[] = MatrixTrace[] = 1	(* e.g. for ghosts *)
 	   use a more generic type.  The replacement must be limited to
 	   the head or else the kinematical information is altered. *)
 ResolvePropagator[type_][_, _, part_] :=
-Block[ {res},
-  res = AnalyticalPropagator[ResolveType[type]][part] /.
+Block[ {rtype = ResolveType[type], res, zero},
+	(* in 0 -> 1 or 1 -> 0 topologies: give momentum, not 0, to
+	   external wavefunction, to allow identification of leg: *)
+  zero = If[ rtype === External, Identity, 0 & ];
+  res = AnalyticalPropagator[rtype][part] /.
     AnalyticalPropagator[Loop] :> AnalyticalPropagator[Internal];
   If[ Head[res] === PV,
     res,

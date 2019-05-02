@@ -1,7 +1,7 @@
 (*
 	Initialize.m
 		Functions for the initialization of models
-		last modified 31 Mar 19 th
+		last modified 8 Apr 19 th
 *)
 
 Begin["`Initialize`"]
@@ -59,6 +59,9 @@ ReadModelFile[args__][name_] :=
 ReadModelFile[newitems_, type_, ext_][name_, deb_] :=
 Block[ {$Path = $ModelPath, file},
   file = System`Private`FindFile[name <> ext];
+  If[ file === $Failed,
+    Message[InitializeModel::noopen, name <> ext];
+    Abort[] ];
   FAPrint[2, indent, "loading ", type, " model file ", file];
 
   (*Off[Syntax::newl, Syntax::com];*)
