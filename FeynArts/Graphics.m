@@ -1,7 +1,7 @@
 (*
 	Graphics.m
 		Graphics routines for FeynArts
-		last modified 7 Mar 19 th
+		last modified 31 Oct 19 th
 *)
 
 Begin["`Graphics`"]
@@ -511,7 +511,8 @@ Block[ {dir, ommc, cs, ctr, rad, mid, dphi, line, phi, damping, t, h, v},
     damping[phi_] := (#/(# + DampingConst))&[(rad Abs[phi - ommc])^4],
   (* else *)
     _damping = 1 ];
-  phi = Mod[ommc - dphi, 2 NPi];
+  phi = ommc - dphi;
+  (*phi = Mod[phi, 2 NPi]; 31 Oct 19 *)
   t = Flatten[{type}];
   h = Position[t, Straight | ScalarDash | GhostDash | Sine | Cycles, 1];
   dphi *= 2./Length[h];

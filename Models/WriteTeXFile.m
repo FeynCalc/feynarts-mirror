@@ -2,7 +2,7 @@
 	WriteTeXFile.m
 		writes out the couplings of a FeynArts
 		model file in TeX form
-		last modified 2 Sep 19 th
+		last modified 29 Nov 19 th
 
 	Usage:	WriteTeXFile["model"]
 *)
@@ -24,8 +24,12 @@ PreFunction::usage =
 applied to each component of the coupling vector before formatting."
 
 MaxLeaf::usage =
-"MaxLeaf is an option of WriteTeXFile.  It specifies the maximum
-permissible leaf count per line."
+"MaxLeaf is an option of WriteTeXFile.  It specifies the leaf count
+above which an expression is split into more than one line."
+
+AbbLeaf::usage =
+"AbbLeaf is an option of WriteTeXFile.  It specifies the leaf count
+above which a subexpression is put into an abbreviation."
 
 TeX::usage =
 "TeX[s] indicates that s is TeX code that is written unmodified to the
@@ -37,6 +41,9 @@ sup, where sub and sup are optional."
 
 delta::usage =
 "delta[sym] outputs \"delta sym\"."
+
+Abb::usage =
+"Abb[expr] prints expr inside a yellow box."
 
 SymRules::usage =
 "SymRules turns common symbols into their printed form."
@@ -81,8 +88,11 @@ BracketForm::usage =
 "BracketForm[expr] isolates expr from the rest of the expression it
 is embedded in and is turned into HoldForm after formatting."
 
-
 Begin["`Private`"]
+
+Attributes[brk] = {HoldAll};
+
+brk[x___] := (Begin["WriteTeXFile`Private`"]; Print["brk ", HoldForm[x]]; Interrupt[]; End[])
 
 template = ReadList[
   System`Private`FindFile[$Input] <> ".tex",
@@ -95,12 +105,19 @@ Format[TeX[s_], OutputForm] := s
 
 Format[BracketForm[expr_], OutputForm] := HoldForm[expr]
 
-TeXEnv[name_, vspace_][args__] := SequenceForm@@ Flatten[{
-  TeX["\n\\begin{" <> name <> "}\n"],
+Format[sym[{s___}, {}, {sup___}], OutputForm] :=
+  Superscript[SequenceForm[s], SequenceForm[sup] /. NoDagger :> Sequence[]]
+
+Format[sym[{s___}, {sub___}, {sup___}], OutputForm] :=
+  Superscript[SequenceForm[s,"(",sub,")"], SequenceForm[sup] /. NoDagger :> Sequence[]]
+
+TeXEnv[name_, vspace_, deb___][args__] := SequenceForm@@ Flatten[{
+  TeX["\n\\begin{" <> name <> "}\n" <> deb],
   Riffle[{args}, TeX[vspace]],
   TeX["\n\\end{" <> name <> "}"] }]
 
-delta[x_] := SequenceForm["\[Delta]", x]
+(*delta[x_] := SequenceForm["\[Delta]", x]*)
+delta[x_] := {"\[Delta]", x}
 
 
 Sym[s_, sub_:{}, sup_:{}] :=
@@ -114,16 +131,16 @@ MakeList[s_Symbol] = {s}
 
 MakeList[i__] := Riffle[DeleteCases[Flatten[{i}], Null], ","]
 
-TeXsym[s_, sub_, sup_] := Subsuperscript@@ SequenceForm@@@
+texsym[s_, sub_, sup_] := subsup@@ SequenceForm@@@
   Map[ToString, {s, sub, sup /. NoDagger :> Sequence[] /. {a__, ","} -> {a}}, {-1}]
 
-Subscript[s_, _[]] := s
+subsup[s_, _[], _[]] := s
 
-Subsuperscript[s_, sub_, _[]] := Subscript[s, sub]
+subsup[s_, sub_, _[]] := Subscript[s, sub]
 
-Subsuperscript[s_, _[], sup_] := Superscript[s, sup]
+subsup[s_, _[], sup_] := Superscript[s, sup]
 
-Subsuperscript[s_, sub_, sup_] := Superscript[Subscript[s, sub], sup]
+subsup[s_, sub_, sup_] := Superscript[Subscript[s, sub], sup]
 
 
 sym/: sym[x__, {sup___}]^n_Integer?Positive := sym[x, {sup, n}];
@@ -210,31 +227,107 @@ sum[s__, ZPlusB[a_, b__]] := -sum[s, ZPlusB@@ -{a, b}] /;
   MinusInFrontQ[a]
 
 
-widthRules := widthRules = Join[ModelWidthRules, WidthRules]
+widthRules := widthRules = Flatten[{ModelWidthRules, WidthRules}]
 
-symRules := symRules = Join[ModelSymRules, SymRules]
+symRules := symRules = Flatten[{ModelSymRules, SymRules}]
 
 
 (* splitting up long expressions *)
 
-SmallEnough[expr__] := LeafCount[{expr} /. widthRules] < maxleaf
+lcmax[li_] := MaximalBy[li, LeafCount][[1]]
+
+lcseq[x_, y___] := Fold[#1[#2]&, x, {y}]
+
+lcsym[{s___, x_}, r__] := Level[{{Random[], s}, lcmax[{r}]}, {2}, lcseq]
+
+lcmulti[h_][z__] := {h @ lcmax[{z}]}
+
+lcCoupVec[pre_, cv_] := CoupVec[pre, {lcmax[cv]}]
+
+lcList[] := Sequence[]
+
+lcList[a_, b___] := a[b] (* disregard LC of List itself *)
 
 
-Attributes[SplitLongPlus] = {HoldAll}
+SizeExpr[expr_] := expr /. widthRules /.
+  hx -> Identity /.
+  SequenceForm|Subscript|Superscript -> lcseq /.
+  "\[Delta]" :> "\[Delta]"[1] /.
+	(* can't help Delta Z displays as (Delta Z), at least account for it *)
+  {TeX[s_] :> s, "," :> Sequence[], s_String :> Characters[s]} /.
+  sym -> lcsym /.
+  h:_multi|ZPlusB|ZTimesB :> lcmulti[h] /.
+  CoupVec -> lcCoupVec /.
+  List -> lcList
 
-SplitLongPlus[x__] := Plus[x] /; SmallEnough[x]
+LC[expr_] := LeafCount[SizeExpr[expr]];
 
-SplitLongPlus[x__] :=
-Block[ {cb, maxleaf = maxleaf - 5},
-  ZPlusB@@ Flatten[ Operate[Coalesce, Plus[x]] ]
+
+SplitExpr[expr_] :=
+Block[ {ex, px, py, abb},
+  abb[h_][x__] := If[ (*!FreeQ[{x}, Abb] ||*) LC[h[x]] < abbleaf, h[x],
+    abb[h][x] = Abb[++subN] ];
+  ex = expr /. Plus :> abb[Plus];
+  ex = Flatten[{ex, Reverse @ Sort[Cases[SubValues[abb], _[_[_[h_][x__]], s_Abb] :> s -> h[x]]]}];
+(*Print["split1"];*)
+  ex = split[Plus(*|Times*)]/@ ex;
+(*Print["split2"];*)
+  ex = split[Plus(*|Times*)]/@ ex;
+(*Print["split3"];*)
+  ex = split[Plus(*|Times*)]/@ ex;
+(*
+Print["split4"];
+  ex = split[Plus(*|Times*)]/@ ex;
+*)
+  ex
 ]
 
 
-Coalesce[h_][a_, b_, r___] := Coalesce[h][{a, b}, r] /; SmallEnough[a, b]
+(*split[h_][cpl_ == val_] := (Print["cpl"]; cpl == split[h][val])*)
 
-Coalesce[h_][a_, r___] := cb[ h@@ Flatten[{a}], Coalesce[h][r] ]
+(*split[h_][var_ -> val_] := (Print[var]; var -> split[h][val])*)
 
-Coalesce[_][] = Sequence[]
+split[Times][expr_] := expr /; Head[expr] =!= Times
+
+split[h_][expr_] :=
+Block[ {ex, exleaf, p, try, ru},
+  ex = expr /. t:h :> hx[t];
+(*If[ MatchQ[ex, _Rule|_Equal], Print[ex[[1]]] ];*)
+  While[ (exleaf = LC[ex]) > maxleaf &&
+         (p = Position[{ex}, _hx[__]]) =!= {},
+    try = short[ex]@@@ p;
+    ru = MinimalBy[try, First][[1,2]];
+(*brk[split];*)
+    ex = ReplacePart[ex, ru];
+  ];
+  ex = ex /. hx -> (#1&) /. {multi[Plus] :> ZPlusB, multi[Times] :> ZTimesB};
+  ex
+]
+
+
+hx[t_][p__] := t[p] /; LC[t[p]] < maxleaf/2
+
+hx[Times][a___, x_, b___, y_, c___] := hx[Times][x y, a, b, c] /; FreeQ[x y, Plus]
+
+
+short[expr_][1, p__] :=
+Block[ {ex, remleaf, fusemax},
+  ex = Extract[expr, {p}] /. hx -> Identity;
+  If[ Length[ex] < 2, Return[{1, ex}] ];
+  remleaf = LC[ReplacePart[expr, {p} -> FOO]];
+  fusemax = Max[maxleaf - remleaf, maxleaf/2] (*- Min[exleaf - maxleaf, maxleaf/2]*);
+(*Print["maxleaf=", maxleaf, "  remleaf=", remleaf, "  exleaf=", exleaf, "  fusemax=", fusemax];*)
+  {N[LC[#]/LC[ex]], {p} -> #}& @ Flatten[Operate[Fuse, ex]]
+]
+
+
+Fuse[h_][a_, x___, b_, y___] := Fuse[h][h[a, b], x, y] /; LC[h[a, b]] < fusemax
+
+Fuse[h_][a_, y___] := multi[h][a, Fuse[h][y]]
+
+Fuse[h_][] := Sequence[] (*multi[h][]*)
+
+multi[_][p_] := p
 
 
 (* ordering inside a product *)
@@ -264,6 +357,8 @@ TimesO[x_, r_. ZPlusB[a_, b__]] := If[ MinusInFrontQ[a],
   TimesO[-x ZPlusB@@ -{a, b}, r],
   TimesO[x ZPlusB[a, b], r] ]
 
+TimesO[x_, r_. z_ZTimesB] := TimesO[x z, r]
+
 TimesO[x_, r_. t_sum] := TimesO[x t, r]
 
 TimesO[x_, r_] := If[Denominator[r] =!= 1, x HoldForm[r], x r] /. ZPlusA -> Plus
@@ -272,11 +367,17 @@ TimesO[x_, r_] := If[Denominator[r] =!= 1, x HoldForm[r], x r] /. ZPlusA -> Plus
 HoldTimes[t_Times] := HoldTimes@@ t
 
 
-TeXZPlusB[a__] := TeXEnv["PlusB", "\\\\\n"]@@ AddSigns[a]
-
-AddSigns[a_, b___] := Partition[Flatten @ {a,
-  If[MinusInFrontQ[#], {TeX["\,-"], -#}, {TeX["\,+"], #}]&/@ {b}, 
+texZPlusB[z_, r___] := TeXEnv["PlusB", "\\\\\n"
+  (*, "\\deb{", ToString[LC[ZPlusB[z, r]]], "}\n"*)
+]@@ Partition[Flatten @ {z,
+  If[MinusInFrontQ[#], {TeX["\,-"], -#}, {TeX["\,+"], #}]&/@ {r},
   ""}, 2]
+
+texZTimesB[t___] := TeXEnv["TimesB", "\\\\\n"
+  (*, "\\deb{", ToString[LC[ZTimesB[t]]], "}\n"*)
+]@@ Partition[
+  Append[Riffle[{TeX["\\left("], #, TeX["\\right)"]}&/@ {t}, TeX["\\,*"]], ""],
+  2]
 
 
 CVcomp[t_Times] := Flatten[Replace[List@@ t (*Cases[t, Except[_Plus]]*), {
@@ -291,53 +392,64 @@ CVcomp[0] := Sequence[]
 _CVcomp = {}
 
 
-ToCoupVec[{c_}] := CoupVec[1][c]
+ToCoupVec[cv:{_}] := CoupVec[1, cv]
 
 ToCoupVec[cv_List] :=
-  (CoupVec[#]@@ (cv/# /. p_Plus/q_Plus :> -1 /; p + q == 0))&[
+  CoupVec[#, cv/# /. p_Plus/q_Plus :> -1 /; p + q == 0]&[
     Times@@ Intersection@@ CVcomp/@ cv ]
 
 
-TeXCoupVec[1][args__] := TeXEnv["CoupVec", "\n\\Next\n"]@@
-  HoldForm/@ {args}
-(*  Replace[HoldForm/@ {args}, HoldForm[x_] :> x, {2, Infinity}]*)
+texCoupVec[1, cv_] := TeXEnv["CoupVec", "\n\\Next\n"
+  (*, "\\deb{", ToString[LC[cv]], "}\n"*)
+]@@ HoldForm/@ cv
 
-TeXCoupVec[pre_][args__] := SequenceForm[HoldForm[pre], TeXCoupVec[1][args]]
+texCoupVec[pre_, cv_] := SequenceForm[HoldForm[pre], texCoupVec[1, cv]]
 
 
 (* sorting into classes of couplings *)
 
 ToTeX[c_, lhs_, rhs_, n_] :=
-Block[ {cl, cr},
-  WriteString["stdout", ToString[n], "\r"];
-  {cl, cr} = {ToBar/@ lhs, Global`CVRAW[n] = ToCoupVec[Global`CVORIG[n] = prefunc/@ rhs]} /.
-    Join@@ MapIndexed[IndexRules, lhs] /.
-    Plus -> SplitLongPlus //.
+Block[ {cl, cr, abb, subN = 0},
+  WriteString["stdout", ToString[Global`CN = n], "\r"];
+  Global`CV[n] = prefunc/@ rhs;
+  cl = TeX["\\Coup{" <> ToString[n] <> "}"]@@ ToBar/@ lhs;
+  cr = ToCoupVec[Global`CV[n]];
+  Global`CXRAW[n] = cl == cr /. Join@@ MapIndexed[IndexRules, lhs] //.
     symRules /.
     FieldRules /.
     { Conjugate[(t:Times)[a__]] :> Conjugate[Sym[{"(", a, ")"}]],
       Conjugate[x_] :> Conjugate[Sym[x]] } //.
     IndexSum[expr_, i__] :> MakeSum[i][expr] /.
-    sym -> TeXsym /.
-    BracketForm[p_Plus] :> -BracketForm[-p] /; MinusInFrontQ[p] /.
+    BracketForm[p_Plus] :> -BracketForm[-p] /; MinusInFrontQ[p];
+  Global`CXSKEL[n] = SplitExpr[Global`CXRAW[n]];
+  If[ subN > 0, Print[n, "/", subN] ];
+  Global`CXPRE[n] = Global`CXSKEL[n] /. symRules //.
+    sym -> texsym /.
     Times -> TimesS /.
-    ZPlusB :> TeXZPlusB //.
+    {ZPlusB :> texZPlusB, ZTimesB :> texZTimesB} //.
     { sum[a___, p_Plus] :> SequenceForm[a, TeX["\\left("], p, TeX["\\right)"]],
       sum[a__] :> SequenceForm[a] };
-  Global`CV[n] = cr = cr /.
+  Global`CX[n] = Global`CXPRE[n] /.
     {p_Plus :> p, -x_ :> SequenceForm["-", x],
       i_Integer?Negative x_ :> SequenceForm["-", -i x]} /.
-    CoupVec -> TeXCoupVec /.
+    CoupVec -> texCoupVec /.
     BracketForm -> HoldForm /.
     AAA[x_] :> x //.
     { SequenceForm[s_SequenceForm] :> s,
       SequenceForm[x_] :> x,
       HoldForm[h_HoldForm] :> h };
-  If[ MemberQ[Global`$Debug, n], Interrupt[] ];
-  class[c] = {class[c], "$",
-    ToString[TeX["\\Coup{" <> ToString[n] <> "}"]@@ cl == cr, TeXForm],
-    "$\n\n\\bigskip\n\n"}
+  If[ MemberQ[Global`$Debug, n], Print[n]; brk["term ", n] ];
+  class[c] = {class[c], texExpr[Global`CX[n]], "\\bigskip\n\n"};
 ]
+
+
+Attributes[texExpr] = {Listable}
+
+texExpr[abb_ -> def_] := {"\\AbbDef{",
+  (*"\\deb{", ToString[LC[def]], "}\n",*)
+  "$", ToString[abb == def, TeXForm], "$}\n\n"}
+
+texExpr[expr_] := {"$", ToString[expr, TeXForm], "$\n\n"}
 
 
 Plural[p_Plus] := Plural/@ List@@ p
@@ -368,15 +480,17 @@ Options[WriteTeXFile] = {
   ModelEdit :> Null,
   TeXFile -> Automatic,
   PreFunction -> Identity,
-  MaxLeaf -> 60,
+  MaxLeaf -> 90,
+  AbbLeaf -> 120,
   CTOrder -> 0 }
 
 WriteTeXFile[model_, opt___?OptionQ] :=
 Block[ {texfile, maxleaf, cto,
 mod, FieldRules, IndexRules, class, couplings, hh},
 
-  {texfile, prefunc, maxleaf, cto} = {TeXFile, PreFunction, MaxLeaf, CTOrder} /.
-    {opt} /. Options[WriteTeXFile];
+  {texfile, prefunc, maxleaf, abbleaf, cto} =
+    {TeXFile, PreFunction, MaxLeaf, AbbLeaf, CTOrder} /.
+      {opt} //. Options[WriteTeXFile];
 
   Check[ mod = LoadModel[model], Abort[] ];
   ModelEdit /. {opt} /. Options[WriteTeXFile];
@@ -409,11 +523,12 @@ EndPackage[]
 
 (* here come the model-dependent things *)
 
-Class[_. _S] = S["Scalar"];
-Class[_. _F] = S["Fermion"];
-Class[_. _SV] = SV["Scalar--Vector"];
-Class[_. _V] = V["Gauge Boson"];
-Class[_. _U] = U["Ghost"]
+Class[_. S[__]] := S["Scalar"];
+Class[_. F[__]] := S["Fermion"];
+Class[_. SV[__]] := SV["Scalar--Vector"];
+Class[_. V[__]] := V["Gauge Boson"];
+Class[_. U[__]] := U["Ghost"]
+
 
 (* we want i and coupling constants to print in front,
    thus the silly name "AAA" *)
@@ -486,19 +601,16 @@ SymRules = {
   dZfR1[t_, j1_, j2_] :> Sym[delta[ZSym], {j1, j2}, {F[t], "R"}],
   dZbarfR1[t_, j1_, j2_] :> Sym[delta[OverBar[ZSym]], {j1, j2}, {F[t], "R"}],
   dCKM1[j1_, j2_] :> Sym[delta["CKM"], {j1, j2}],
-  dTH1 :> Sym[delta["T"], "H"]
+  dTH1 :> Sym[delta["T"], "H"],
+  Abb[x_] :> Sym[{TeX["\\Abb{"], x, TeX["}"]}]
 }
 
 ModelSymRules = {}
 
 
 WidthRules = {
-  _Mass -> "m"[1],
-  h_[__][i__] :> h[i, 1],  (* upper indices of e.g. USf don't count *)
-  (d:dZfL1|dZfR1)[t_, j1_, j2_] :> d[j1, j2],
-  -1 -> +1,  (* a - b counts same as a + b *)
-  Conjugate -> Identity,  (* USf^* counts as USf *)
-  Power -> (If[IntegerQ[#2], #1, #1^#2]&)  (* M_W^2 counts as M_W *)
+  OverBar|OverTilde -> Identity,
+  -1 -> +1  (* a - b counts same as a + b *)
 }
 
 ModelWidthRules = {}

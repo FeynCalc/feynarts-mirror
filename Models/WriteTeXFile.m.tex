@@ -33,12 +33,22 @@
   \underset{\rlap{\hbox{\tiny\textcolor{blue}{#1}}}}{C}%
   \displaystyle}
 
+\newcommand\deb[1]{\llap{\rotatebox{90}{\textcolor{red}{#1}}}}
+
+\newenvironment{TimesB}%
+  {\left\{\begin{array}{>{\displaystyle}l}}%
+  {\end{array}\right\}}
 \newenvironment{PlusB}%
   {\begin{array}{>{\displaystyle}l}}%
   {\end{array}}
 \newenvironment{PlusN}%
   {\begin{array}[t]{>{\displaystyle}l}}%
   {\end{array}}
+
+\definecolor{fgAbb}{cmyk}{0,0,1,0}	% yellow
+\definecolor{bgAbb}{gray}{.95}		% light grey
+\newcommand\Abb[1]{\colorbox{fgAbb}{#1}\displaystyle}
+\newcommand\AbbDef[1]{\smallskip\colorbox{bgAbb}{#1}}
 
 \newcommand\Mfunction[1]{\displaystyle #1}
 \newcommand\Muserfunction[1]{\text{#1}}

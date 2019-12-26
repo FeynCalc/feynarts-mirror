@@ -1,7 +1,7 @@
 (*
 	Initialize.m
 		Functions for the initialization of models
-		last modified 8 Apr 19 th
+		last modified 2 Sep 19 th
 *)
 
 Begin["`Initialize`"]
@@ -537,18 +537,17 @@ ToPatt[c__C] := Map[ToPatt, Alternatives[c], {2}]
 
 ToPatt[p_] := p /; !FreeQ[p, Verbatim[_] | Verbatim[__] | Verbatim[___]]
 
-(*ToPatt[s_Symbol f_] := Optional[patt[s]] ToPatt[f]*)
 ToPatt[s_Symbol f_] := s_. ToPatt[f]
 
-(*ToPatt[s_. f:P$Generic[__]] := s Replace[f, x_Symbol :> patt[x], {1, Infinity}]*)
 ToPatt[s_. f:P$Generic[__]] := s Replace[f, x_Symbol :> x_, {1, Infinity}]
 
 ToPatt[other_] := other
 
+
 patt = Pattern[#, _]&
 
 
-On[RuleDelayed::rhs]
+(*On[RuleDelayed::rhs]*)
 
 
 CloseKinematicVector[cpl_AnalyticalCoupling == g_ . kin_List] :=

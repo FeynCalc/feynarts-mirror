@@ -2,7 +2,7 @@
 	Analytic.m
 		Translation of InsertFields output into
 		analytic expressions
-		last modified 11 Apr 19 th
+		last modified 24 Sep 19 th
 *)
 
 Begin["`Analytic`"]
@@ -226,6 +226,9 @@ Block[ {track, amp, gm, gmraw, anti},
   Append[amp, gm -> CreateAmpIns[top, gmraw, sym mtf]/@ ins] /.
     fi_[i__, _track, ___] :> fi[i]
 ]
+
+	(* NLOCT needs the propagator type in the generic amplitude *)
+TheMass[fi:_[_, _track, t_Symbol, ___]] := Mass[fi, t]
 
 
 FieldNumber[fi_] := Sequence@@ Cases[fi, Field[n_] :> n, Infinity, 1] /;
